@@ -3,8 +3,8 @@
   "blockchain": {
     "nodeUrl": "ws://localhost:8548",
     "homeNodeUrl": "ws://localhost:8548",
-    "vaultAddress": "0x30e2569DD76543433DF130805a42554B4a4441cD",
-    "liquidPledgingAddress": "0x6B6B37258De33b4e1DD6AE1aB51D7aE5612D5b98",
+    "vaultAddress": "0xd916d3eB4AbEa19118bCFB8F06430309b4aB1298",
+    "liquidPledgingAddress": "0x46579394802b5e4d2C0647436BFcc71A2d9E8478",
     "ethFunderPK": ""
   },
   "tokenWhitelist": [ 
@@ -16,8 +16,8 @@
       "decimals": 18
     },
     { "name": "MiniMe Test Token", 
-      "address": "0xA42aF0bcb7e348c62c196af05f9Fd0F89a51c757",
-      "foreignAddress": "0xA42aF0bcb7e348c62c196af05f9Fd0F89a51c757", 
+      "address": "0x428Eee6c7f663a8249518743B861420e94C3dD70",
+      "foreignAddress": "0x428Eee6c7f663a8249518743B861420e94C3dD70", 
       "symbol": "ANT", 
       "decimals": 18 
     }            
