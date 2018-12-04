@@ -4,7 +4,7 @@ const { Kernel, ACL, LPVault, LiquidPledging, LPFactory, test } = require('givet
 const { LPPCampaign, LPPCampaignFactory } = require('lpp-campaign');
 const { LPPCappedMilestone, LPPCappedMilestoneFactory } = require('lpp-capped-milestone');
 const { MiniMeTokenFactory, MiniMeToken, MiniMeTokenState } = require('minimetoken');
-const startNetworks = require('./startNetworks');
+const startRSKNetwork = require('./startRSKNetwork');
 
 const { RecoveryVault } = test;
 
@@ -15,7 +15,7 @@ if (processStartNetwork) {
   processStartNetwork = !['f', 'false'].includes(processStartNetwork.toLowerCase());
 }
 const START_NETWORK = processStartNetwork === undefined ? true : processStartNetwork;
-const PROVIDER = process.env.PROVIDER || 'http://localhost:8546';
+const PROVIDER = process.env.PROVIDER || 'http://localhost:8545';
 
 // TODO: this was a quick hack to deploy rsk locally. Could definetly use some cleanup
 // especially regarding the accounts, etc. Probably best to include a custom genesis.json
@@ -23,10 +23,10 @@ const PROVIDER = process.env.PROVIDER || 'http://localhost:8546';
 async function deploy() {
   try {
     if (START_NETWORK) {
-      console.log('------------------- Starting Networks -------------------------\n');
-      const { foreignNetwork } = await startNetworks();
+      console.log('------------------- Starting RSK -------------------------\n');
+      const rsk = await startRSKNetwork();
 
-      await foreignNetwork.waitForStart();
+      await rsk.waitForStart();
     }
     console.log('------------------- Deploying -------------------------\n');
 
@@ -174,8 +174,7 @@ async function deploy() {
       'MiniMe Test Token',
       18,
       'MMT',
-      true,
-      { from: accounts[0] },
+      true
     );
 
     // generate tokens for all accounts
@@ -184,9 +183,10 @@ async function deploy() {
     // await miniMeToken.generateTokens(accounts[10], web3.utils.toWei('200000'), {
     // from: accounts[0],
     // });
-    await miniMeToken.generateTokens(accounts[0], web3.utils.toWei('10000'), {
-      from: accounts[0],
-    });
+    await miniMeToken.generateTokens(from, web3.utils.toWei('1000000'));
+
+    // transfer tokens to all other home accounts, so that Meta mask will detect these tokens
+    res = await Promise.all(accounts.map(async a => await miniMeToken.transfer(a, Web3.utils.toWei("10000"), { from: from })));
 
     // transfer tokens to all other home accounts, so that Meta mask will detect these tokens
     // note: rsk node sucks at handling async txs & will fail, so we have to do it 1 by 1
@@ -206,9 +206,7 @@ async function deploy() {
 
     const miniMeTokenState = new MiniMeTokenState(miniMeToken);
     const st = await miniMeTokenState.getState();
-    accounts.map(a =>
-      console.log('MMT balance of address ', a, ' > ', web3.utils.fromWei(st.balances[a])),
-    );
+    accounts.map(a => console.log('MMT balance of address ', a, ' > ', Web3.utils.fromWei(st.balances[a])));
 
     console.log('\n\n', {
       vault: vault.$address,
