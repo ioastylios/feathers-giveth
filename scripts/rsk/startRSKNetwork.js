@@ -13,7 +13,8 @@ module.exports = async (blockTime = 0) => {
 
   // start networks
   const rskNetwork = Ganache.server({
-    total_accounts: 11,
+    total_accounts: 10,
+    mnemonic: "creek debate assault dash riot butter foster bronze liberty index text stem",
     ws: true,
     seed: 'RSK is awesome!',
     db_path: dbPath,
@@ -24,7 +25,7 @@ module.exports = async (blockTime = 0) => {
     blockTime,
   });
 
-  rskNetwork.listen(8545, '127.0.0.1', () => {});
+  rskNetwork.listen(8548, '127.0.0.1', () => {});
   rskNetwork.waitForStart = () =>
     new Promise((resolve, reject) => {
       if (rskNetwork.listening) {

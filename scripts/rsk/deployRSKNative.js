@@ -15,7 +15,7 @@ if (processStartNetwork) {
   processStartNetwork = !['f', 'false'].includes(processStartNetwork.toLowerCase());
 }
 const START_NETWORK = processStartNetwork === undefined ? true : processStartNetwork;
-const PROVIDER = process.env.PROVIDER || 'http://localhost:8545';
+const PROVIDER = process.env.PROVIDER || 'http://localhost:8548';
 
 // TODO: this was a quick hack to deploy rsk locally. Could definetly use some cleanup
 // especially regarding the accounts, etc. Probably best to include a custom genesis.json
