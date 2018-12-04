@@ -26,9 +26,9 @@
     "eslint": "eslint src/. test/.",
     "eslint:fix": "eslint src/. test/. --fix",
     "deploy-local": "npm run reset-db && node scripts/deploy.js",
-    "deploy-local:rsk": "npm run reset-db && node scripts/rsk/deployNative.js",
+    "deploy-local:rsk": "npm run reset-rsk-db && node scripts/rsk/deployRSKNative.js",
     "start": "babel-watch ./src/index.js",
-    "start:rsk": "NODE_ENV=rsk nodemon --inspect src",
+    "start:rsk": "NODE_ENV=rsk babel-watch ./src/index.js",
     "start:rskNetwork": "node scripts/rsk/startRSK.js",    
     "start:rskNetwork:debug": "LOG_LEVEL=debug node scripts/rsk/startRSK.js",    
     "start:networks": "node scripts/startBridge.js",
@@ -37,6 +37,7 @@
     "mocha": "mocha test/ --recursive",
     "prettify": "prettier --write 'src/**/*.js*'",
     "reset-db": "node scripts/resetDataBase.js",
+    "reset-rsk-db": "node scripts/rsk/resetRSKDataBase.js",
     "mongo": "mongod --fork --syslog"
   },
   "dependencies": {

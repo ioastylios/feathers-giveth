@@ -8,7 +8,7 @@ process.on('unhandledRejection', console.log);
 
 module.exports = async (blockTime = 0) => {
   // create folder to store chain data
-  const dbPath = path.join(__dirname, '../data/ganache-cli/rsk');
+  const dbPath = path.join(__dirname, '../../data/ganache-cli/rsk');
   mkdirp.sync(dbPath);
 
   // start networks

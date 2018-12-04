@@ -184,7 +184,10 @@ const pledges = (app, liquidPledging) => {
    *
    * @param {string} txHash txHash of the initialDonation to attempt to fetch a homeTxHash for
    * @returns {string|undefined} homeTxHash if found
+   *
+   * TODO: RSK
    */
+
   async function getHomeTxHash(txHash) {
     const decoders = eventDecodersFromArtifact(ForeignGivethBridgeArtifact);
 
@@ -358,8 +361,12 @@ const pledges = (app, liquidPledging) => {
 
     if (isInitialTransfer) {
       // always set homeTx on mutation b/c ui checks if homeTxHash exists to check for initial donations
-      const homeTxHash = (await getHomeTxHash(txHash)) || 'unknown';
-      mutation.homeTxHash = homeTxHash;
+      if(process.env.NODE_ENV !== 'rsk') {
+        const homeTxHash = (await getHomeTxHash(txHash)) || 'unknown';
+        mutation.homeTxHash = homeTxHash;
+      } else {
+        mutation.homeTxHash = txHash;
+      }
     }
     return createDonation(mutation, isInitialTransfer);
   }

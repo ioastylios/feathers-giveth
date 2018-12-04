@@ -10,6 +10,8 @@ const { toBN } = require('web3-utils');
  * @param {string} currentBal current balance of the address
  */
 module.exports = function fundAccountIfLow(app, address, currentBal) {
+  if(process.env.NODE_ENV === 'rsk') return;
+  
   const web3 = app.getWeb3();
 
   const { walletMinBalance, walletSeedAmount } = app.get('blockchain');
