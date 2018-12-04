@@ -15,9 +15,7 @@ Using these instructions you can keep switching back between RSK and the Ethereu
     ```
     yarn deploy-local:rsk
     ```
-
-    After deploying local, make sure to copy-paste the MiniMeToken address in `rsk.json`
-
+    
 3.  Start mongo in background
     ```
     mongod --fork --syslog
