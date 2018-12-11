@@ -10,8 +10,8 @@
   "tokenWhitelist": [ 
     { 
       "name": "Home Ganache ETH", 
-      "address": "0x0", 
-      "foreignAddress": "0x0",
+      "address": "0x0000000000000000000000000000000000000000", 
+      "foreignAddress": "0x0000000000000000000000000000000000000000",
       "symbol": "ETH", 
       "decimals": 18
     },
