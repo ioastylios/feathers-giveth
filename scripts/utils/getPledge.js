@@ -1,9 +1,18 @@
 const Web3 = require('web3');
-const { LiquidPledging } = require('giveth-liquidpledging');
+const { LiquidPledging, LPVault } = require('giveth-liquidpledging');
 const { LPPCappedMilestone } = require('lpp-capped-milestone');
 const web3 = new Web3('http://localhost:8548');
 const Confirm = require('prompt-confirm');
 const { MiniMeTokenFactory, MiniMeToken, MiniMeTokenState } = require('minimetoken');
+
+const config = require('./../../config/rsk.json')
+
+const milestoneToCheck = "0x84B9B1b443d6cC59C2a6548EA52825e20EEA8d04";
+const accountToCheck = "0x0414eFBbbf1D7BaeB15030F7815820963052932d";
+const idPayment = 0;
+
+const PledgeState = ["Pledged", "Paying", "Paid"]
+const PaymentStatus = ["Pending", "Paid", "Canceled"]
 
 const ERC20ABI = [
   // read balanceOf
@@ -48,19 +57,29 @@ const ERC20ABI = [
 **/
 
 async function getPledge(pledgeId) {
-  const liquidPledging = new LiquidPledging(web3, "0x46579394802b5e4d2C0647436BFcc71A2d9E8478");
+  const liquidPledging = new LiquidPledging(web3, config.blockchain.liquidPledgingAddress);
+  const vault = new LPVault(web3, config.blockchain.vaultAddress);
+  console.log('vault autopay?', await vault.autoPay())
+  const payment = await vault.payments(idPayment)
+  console.log('vault payment', payment);
+  console.log('>> status: ', PaymentStatus[parseInt(payment.state)]);
+  console.log('>> tokens paid to Milestone? ', payment.dest === milestoneToCheck);
+  console.log('>> tokens paid: ', Web3.utils.fromWei(payment.amount));
 
   const pledge = await liquidPledging.getPledge(pledgeId);
   console.log('pledge', pledge)
+  console.log('>> state: ', PledgeState[parseInt(pledge.pledgeState)])
 
-  const milestone = new LPPCappedMilestone(web3, "0x657bC94Cd3f7915De06AB15a667A76E2B83A8810");
+  const milestone = new LPPCappedMilestone(web3, milestoneToCheck);
   const acceptedToken = await milestone.recipient();
-  console.log('acceptedToken', acceptedToken)
+  const completed = await milestone.completed();
+  console.log("milestone's acceptedToken", acceptedToken);
+  console.log("milestone completed? ", completed);
 
-  const ERC20 = new MiniMeToken(web3, "0x428Eee6c7f663a8249518743B861420e94C3dD70")
-  const balanceOfVault = await ERC20.balanceOf("0xd916d3eB4AbEa19118bCFB8F06430309b4aB1298")
-  const balanceOfMilestone = await ERC20.balanceOf("0x428Eee6c7f663a8249518743B861420e94C3dD70")
-  const balanceOfAccount = await ERC20.balanceOf("0x9501A90A1B57Eee96fa4A9f1259f4e75435aD4Cd") 
+  const ERC20 = new MiniMeToken(web3, config.tokenWhitelist[1].address)
+  const balanceOfVault = await ERC20.balanceOf(config.blockchain.vaultAddress)
+  const balanceOfMilestone = await ERC20.balanceOf(milestoneToCheck)
+  const balanceOfAccount = await ERC20.balanceOf(accountToCheck) 
 
   console.log('balanceOfVault', Web3.utils.fromWei(balanceOfVault));
   console.log('balanceOfMilestone', Web3.utils.fromWei(balanceOfMilestone));
