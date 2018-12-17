@@ -16,8 +16,8 @@
       "decimals": 18
     },
     { "name": "MiniMe Test Token", 
-      "address": "0x428Eee6c7f663a8249518743B861420e94C3dD70",
-      "foreignAddress": "0x428Eee6c7f663a8249518743B861420e94C3dD70", 
+      "address": "0xe240d0F097a9910b5d81D760f24A2BE27bC924a7",
+      "foreignAddress": "0xe240d0F097a9910b5d81D760f24A2BE27bC924a7", 
       "symbol": "ANT", 
       "decimals": 18 
     }            

@@ -99,6 +99,7 @@
     "eslint-loader": "^1.9.0",
     "eslint-plugin-import": "^2.8.0",
     "eslint-plugin-prettier": "^2.4.0",
+    "eth-token-creator": "^1.0.16",
     "ganache-cli": "^6.1.2",
     "lerna": "^2.2.0",
     "minimetoken": "^0.2.0",

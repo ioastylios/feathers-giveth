@@ -3,8 +3,8 @@ const Web3 = require('web3');
 const { Kernel, ACL, LPVault, LiquidPledging, LPFactory, test } = require('giveth-liquidpledging');
 const { LPPCampaign, LPPCampaignFactory } = require('lpp-campaign');
 const { LPPCappedMilestone, LPPCappedMilestoneFactory } = require('lpp-capped-milestone');
-const { MiniMeTokenFactory, MiniMeToken, MiniMeTokenState } = require('minimetoken');
 const startRSKNetwork = require('./startRSKNetwork');
+const etc = require('eth-token-creator');
 
 const { RecoveryVault } = test;
 
@@ -28,7 +28,7 @@ async function deploy() {
 
       await rsk.waitForStart();
     }
-    console.log('------------------- Deploying -------------------------\n');
+    console.log('\n\n------------------- Deploying -------------------------\n\n');
 
     const web3 = new Web3(PROVIDER);
 
@@ -111,7 +111,8 @@ async function deploy() {
     await vault.setAutopay(true, { from: accounts[0], $extraGas: 100000 });
 
     // deploy campaign plugin
-    const tokenFactory = await MiniMeTokenFactory.new(web3);
+    console.log('\n\n------------------- Deploy campaign factory -------------------------\n\n');
+
     const lppCampaignFactory = await LPPCampaignFactory.new(web3, kernel.$address, {
       $extraGas: 100000,
     });
@@ -139,6 +140,7 @@ async function deploy() {
     );
 
     // deploy milestone plugin
+    console.log('\n\n------------------- Deploy milestone factory -------------------------\n\n');
     const lppCappedMilestoneFactory = await LPPCappedMilestoneFactory.new(web3, kernel.$address, {
       $extraGas: 100000,
     });
@@ -165,57 +167,36 @@ async function deploy() {
       { $extraGas: 100000 },
     );
 
+    console.log('\n\n------------------- Deploy ERC20 test token -------------------------\n\n');
     // deploy ERC20 test token
-    const miniMeToken = await MiniMeToken.new(
-      web3,
-      tokenFactory.$address,
-      0,
-      0,
-      'MiniMe Test Token',
-      18,
-      'MMT',
-      true
-    );
-
-    // generate tokens for all accounts
-
-    // we first generate all tokens, then transfer, otherwise MetaMask will not show token balances
-    // await miniMeToken.generateTokens(accounts[10], web3.utils.toWei('200000'), {
-    // from: accounts[0],
-    // });
-    await miniMeToken.generateTokens(from, web3.utils.toWei('100000'));
+    await etc.compile();
+ 
+    // 2. set provider for web3 module
+    etc.setProvider(PROVIDER);
+ 
+    // 3. deploy contract and return address
+    const token = await etc.deploy({ name: 'Test Token', symbol: 'MMT', initialSupply: 100000, gas: 1000000 });
+    console.log('token address', token._address, await token.methods.totalSupply().call());
 
     // transfer tokens to all other home accounts, so that Meta mask will detect these tokens
-    res = await Promise.all(accounts.map(async a => await miniMeToken.transfer(a, Web3.utils.toWei("10000"), { from: from })));
+    res = await Promise.all(accounts.map(async a => {
+      console.log("AAAA > ", a)
+      await token.methods.transfer(a, 10000).send({ from: accounts[0], $extraGas: 100000 })
+    }));
 
-    // transfer tokens to all other home accounts, so that Meta mask will detect these tokens
-    // note: rsk node sucks at handling async txs & will fail, so we have to do it 1 by 1
-    // console.log('here', await miniMeToken.balanceOf(accounts[10]));
-    // await miniMeToken.transfer(accounts[0], web3.utils.toWei('10000'), { from: accounts[10] });
-    // console.log('here');
-    // await miniMeToken.transfer(accounts[1], web3.utils.toWei('10000'), { from: accounts[10] });
-    // console.log('here');
-    // for (const a of accounts) {
-    // await miniMeToken.transfer(a, web3.utils.toWei('10000'), { from: accounts[10] });
-    // }
-    // await Promise.all(
-    // accounts.map(async a =>
-    // miniMeToken.transfer(a, web3.utils.toWei('10000'), { from: accounts[10] }),
-    // ),
-    // );
+    res = await Promise.all(accounts.map(async a => {
+      const balance = await token.methods.balanceOf(a).call()
+      console.log(a, " balance: ", balance, 'MMT')
+    }));
 
-    const miniMeTokenState = new MiniMeTokenState(miniMeToken);
-    const st = await miniMeTokenState.getState();
-    accounts.map(a => console.log('MMT balance of address ', a, ' > ', Web3.utils.fromWei(st.balances[a])));
-
-    console.log('\n\n', {
+    console.log('------------------- Result -------------------------\n\n', {
       vault: vault.$address,
       liquidPledging: liquidPledging.$address,
       lppCampaignFactory: lppCampaignFactory.$address,
       lppCappedMilestoneFactory: lppCappedMilestoneFactory.$address,
       miniMeToken: {
         name: 'MiniMe Token',
-        address: miniMeToken.$address,
+        address: token._address,
         symbol: 'MMT',
         decimals: 18,
       },
