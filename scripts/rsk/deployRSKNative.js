@@ -3,8 +3,8 @@ const Web3 = require('web3');
 const { Kernel, ACL, LPVault, LiquidPledging, LPFactory, test } = require('giveth-liquidpledging');
 const { LPPCampaign, LPPCampaignFactory } = require('lpp-campaign');
 const { LPPCappedMilestone, LPPCappedMilestoneFactory } = require('lpp-capped-milestone');
+const GivethTestToken = require('./../../src/contracts/js/GivethTestToken.js');
 const startRSKNetwork = require('./startRSKNetwork');
-const etc = require('eth-token-creator');
 
 const { RecoveryVault } = test;
 
@@ -168,25 +168,28 @@ async function deploy() {
     );
 
     console.log('\n\n------------------- Deploy ERC20 test token -------------------------\n\n');
-    // deploy ERC20 test token
-    await etc.compile();
- 
-    // 2. set provider for web3 module
-    etc.setProvider(PROVIDER);
- 
-    // 3. deploy contract and return address
-    const token = await etc.deploy({ name: 'Test Token', symbol: 'MMT', initialSupply: 100000, gas: 1000000 });
-    console.log('token address', token._address, await token.methods.totalSupply().call());
 
-    // transfer tokens to all other home accounts, so that Meta mask will detect these tokens
+    const tokenName = 'Giveth Test Token';
+    const tokenSymbol = 'GTT';
+    const tokenDecimals = 18;
+
+    const Token = await GivethTestToken.new(web3, 
+      tokenName, 
+      tokenSymbol, 
+      tokenDecimals,
+      web3.utils.toWei("1000000"),
+      { from: from }
+    );
+
+    // transfer tokens from account[0] to all other accounts
     res = await Promise.all(accounts.map(async a => {
-      console.log("AAAA > ", a)
-      await token.methods.transfer(a, 10000).send({ from: accounts[0], $extraGas: 100000 })
+      const r = await Token.transfer(a, web3.utils.toWei("100000"), { from: from })
     }));
 
+    // fetching balances
     res = await Promise.all(accounts.map(async a => {
-      const balance = await token.methods.balanceOf(a).call()
-      console.log(a, " balance: ", balance, 'MMT')
+      const balance = await Token.balanceOf(a)
+      console.log(a, " balance: ", web3.utils.fromWei(balance), 'MMT')
     }));
 
     console.log('------------------- Result -------------------------\n\n', {
@@ -195,10 +198,10 @@ async function deploy() {
       lppCampaignFactory: lppCampaignFactory.$address,
       lppCappedMilestoneFactory: lppCappedMilestoneFactory.$address,
       miniMeToken: {
-        name: 'MiniMe Token',
-        address: token._address,
-        symbol: 'MMT',
-        decimals: 18,
+        name: tokenName,
+        address: Token.$address,
+        symbol: tokenSymbol,
+        decimals: tokenDecimals,
       },
     });
     process.exit(); // some reason, this script won't exit. I think it has to do with web3 subscribing to tx confirmations?
