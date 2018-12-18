@@ -5,6 +5,8 @@
     "homeNodeUrl": "ws://localhost:8548",
     "vaultAddress": "0xd916d3eB4AbEa19118bCFB8F06430309b4aB1298",
     "liquidPledgingAddress": "0x46579394802b5e4d2C0647436BFcc71A2d9E8478",
+    "lppCampaignFactory": "0xe3155F7A49897e7860476b5A625B258ebe43cA98",
+    "lppCappedMilestoneFactory": "0x1b6E4a9eB8264E46784a782c87e3529E203425Ca",
     "ethFunderPK": ""
   },
   "tokenWhitelist": [ 
@@ -15,7 +17,7 @@
       "symbol": "ETH", 
       "decimals": 18
     },
-    { "name": "MiniMe Test Token", 
+    { "name": "Giveth Test Token", 
       "address": "0xe240d0F097a9910b5d81D760f24A2BE27bC924a7",
       "foreignAddress": "0xe240d0F097a9910b5d81D760f24A2BE27bC924a7", 
       "symbol": "ANT", 
