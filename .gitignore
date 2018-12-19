@@ -1,4 +1,4 @@
-build
+./build
 scripts/deployGiveth.js
 config
 !config/default.json

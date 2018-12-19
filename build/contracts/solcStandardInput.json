@@ -1,0 +1,32 @@
+{
+  "language": "Solidity",
+  "sources": {
+    "./src/contracts/GivethTestToken.sol": {
+      "keccak256": "0x00aeb3cc5dc308c87802ddaf8dc18354bc6912407e05c6ba892b22d26789a134",
+      "content": "pragma solidity ^0.4.11;\n\n// import 'openzeppelin-solidity/contracts/math/SafeMath.sol';\n// import 'openzeppelin-solidity/contracts/token/ERC20.sol';\n\ncontract GivethTestToken is ERC20 {\n  using SafeMath for uint256;\n\n  string public symbol = \"GTT\";\n  string public name = \"GivethTestToken\";\n  uint8 public decimals = 18;\n  \n  mapping (address => uint256) balances;\n  mapping (address => mapping (address => uint256)) allowed;\n  \n  function GivethTestToken() public {\n    balances[msg.sender] = 1000 * (10 ** uint256(decimals));\n    totalSupply = 1000 * (10 ** uint256(decimals));\n  }\n}"
+    }
+  },
+  "settings": {
+    "remappings": [],
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "metadata": {
+      "useLiteralContent": true
+    },
+    "outputSelection": {
+      "*": {
+        "*": [
+          "metadata",
+          "evm.bytecode.object",
+          "evm.bytecode.sourceMap",
+          "abi",
+          "evm.methodIdentifiers",
+          "evm.deployedBytecode.object",
+          "evm.deployedBytecode.sourceMap"
+        ]
+      }
+    }
+  }
+}
