@@ -102,7 +102,6 @@ const updateEntity = async (context, donation) => {
       return {
         name: tokenDonation.token.name,
         address: tokenDonation.token.address,
-        foreignAddress: tokenDonation.token.foreignAddress,
         decimals: tokenDonation.token.decimals,
         symbol,
         totalDonated,

@@ -28,24 +28,26 @@ function logTransferInfo(transferInfo) {
 }
 
 function _retreiveTokenFromPledge(app, pledge) {
-    const tokenWhitelist = app.get('tokenWhitelist');
-    let token;
-    
-    if (Array.isArray(tokenWhitelist))
-      token = tokenWhitelist.find(
-        t =>
-          typeof t.foreignAddress === 'string' &&
-          typeof pledge.token === 'string' &&
-          t.foreignAddress.toLowerCase() === pledge.token.toLowerCase(),
-      );
-    else {
-      throw new Error('Could not get tokenWhitelist or it is not defined');
-    }
+  const tokenWhitelist = app.get('tokenWhitelist');
+  let token;
 
-    if (!token)
-      throw new Error(`Token address ${pledge.token} was not found in whitelist for pledge ${pledgeId}`);
+  if (Array.isArray(tokenWhitelist))
+    token = tokenWhitelist.find(
+      t =>
+        typeof t.address === 'string' &&
+        typeof pledge.token === 'string' &&
+        t.address.toLowerCase() === pledge.token.toLowerCase(),
+    );
+  else {
+    throw new Error('Could not get tokenWhitelist or it is not defined');
+  }
 
-    return token
+  if (!token)
+    throw new Error(
+      `Token address ${pledge.token} was not found in whitelist for pledge ${pledge}`,
+    );
+
+  return token;
 }
 
 // sort donations by pendingAmountRemaining (asc with undefined coming last)
@@ -177,43 +179,6 @@ const pledges = (app, liquidPledging) => {
   const pledgeAdmins = app.service('pledgeAdmins');
 
   /**
-   * Attempts to fetch the homeTxHash for an initial donation into lp.
-   *
-   * b/c we are using the bridge, we expect the ForeignGivethBridge Deposit event
-   * to occur in the same tx as the initial donation.
-   *
-   * @param {string} txHash txHash of the initialDonation to attempt to fetch a homeTxHash for
-   * @returns {string|undefined} homeTxHash if found
-   *
-   * TODO: RSK
-   */
-
-  async function getHomeTxHash(txHash) {
-    const decoders = eventDecodersFromArtifact(ForeignGivethBridgeArtifact);
-
-    const [err, receipt] = await toWrapper(web3.eth.getTransactionReceipt(txHash));
-
-    if (err || !receipt) {
-      logger.error('Error fetching transaction, or no tx receipt found ->', err, receipt);
-      return undefined;
-    }
-
-    const topics = topicsFromArtifacts([ForeignGivethBridgeArtifact], ['Deposit']);
-
-    // get logs we're interested in.
-    const logs = receipt.logs.filter(log => topics.some(t => t.hash === log.topics[0]));
-
-    if (logs.length === 0) return undefined;
-
-    const log = logs[0];
-
-    const topic = topics.find(t => t.hash === log.topics[0]);
-    const event = decoders[topic.name](log);
-
-    return event.returnValues.homeTx;
-  }
-
-  /**
    * fetch donations for a pledge needed to fulfill the transfer amount
    *
    * lp will aggregate multiple donations by the same person to another entity
@@ -258,23 +223,7 @@ const pledges = (app, liquidPledging) => {
       mined: false,
       $or: [{ pledgeId: '0' }, { pledgeId: mutation.pledgeId }],
     };
-    if (isInitialTransfer) {
-      // b/c new donations occur on a different network, we can't use the txHash here
-      // so attempt to find the 1st donation where all other params are the same
-      Object.assign(query, {
-        status: DonationStatus.PENDING,
-        ownerId: { $in: [0, mutation.ownerId] }, // w/ donateAndCreateGiver, ownerId === 0
-        delegateId: mutation.delegateId,
-        intendedProjectId: mutation.intendedProjectId,
-        txHash: undefined,
-        homeTxHash: { $exists: true },
-        $sort: {
-          createdAt: 1,
-        },
-      });
-    } else {
-      query.txHash = mutation.txHash;
-    }
+    query.txHash = mutation.txHash;
 
     const donations = await donationService.find({
       paginate: false,
@@ -295,10 +244,10 @@ const pledges = (app, liquidPledging) => {
     return donationService.patch(donations[0]._id, mutation);
   }
 
-  async function newDonation(app, pledgeId, amount, ts, txHash) {
+  async function newDonation(app2, pledgeId, amount, ts, txHash) {
     const pledge = await liquidPledging.getPledge(pledgeId);
     const giver = await getPledgeAdmin(pledge.owner);
-    const token = _retreiveTokenFromPledge(app, pledge);
+    const token = _retreiveTokenFromPledge(app2, pledge);
 
     const mutation = {
       giverAddress: giver.admin.address, // giver is a user type
@@ -358,16 +307,6 @@ const pledges = (app, liquidPledging) => {
       transferInfo,
       await isReturnTransfer(transferInfo),
     );
-
-    if (isInitialTransfer) {
-      // always set homeTx on mutation b/c ui checks if homeTxHash exists to check for initial donations
-      if(process.env.NODE_ENV !== 'rsk') {
-        const homeTxHash = (await getHomeTxHash(txHash)) || 'unknown';
-        mutation.homeTxHash = homeTxHash;
-      } else {
-        mutation.homeTxHash = txHash;
-      }
-    }
     return createDonation(mutation, isInitialTransfer);
   }
 

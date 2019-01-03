@@ -2,6 +2,7 @@
 scripts/deployGiveth.js
 config
 !config/default.json
+!scripts/config
 ecosystem.config.js
 
 # Logs
@@ -116,3 +117,4 @@ $RECYCLE.BIN/
 /lib/
 data/
 /uploads
+scripts/bin

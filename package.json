@@ -7,12 +7,6 @@
   "keywords": [
     "feathers"
   ],
-  "author": {
-    "name": "ojones",
-    "email": "wakeupoj@gmail.com"
-  },
-  "contributors": [],
-  "bugs": {},
   "directories": {
     "lib": "src",
     "test": "test/"
@@ -25,14 +19,14 @@
     "test": "npm run eslint && npm run mocha",
     "eslint": "eslint src/. test/.",
     "eslint:fix": "eslint src/. test/. --fix",
-    "deploy-local": "npm run reset-db && node scripts/deploy.js",
-    "deploy-local:rsk": "npm run reset-rsk-db && node scripts/rsk/deployRSKNative.js",
-    "start": "babel-watch ./src/index.js",
+    "deploy:ganache": "NODE_ENV=ganache node scripts/deployProcess.js",
+    "deploy:rsk": "NODE_ENV=rsk node scripts/deployProcess.js",
     "start:rsk": "NODE_ENV=rsk babel-watch ./src/index.js",
-    "start:rskNetwork": "node scripts/rsk/startRSK.js",
-    "start:rskNetwork:debug": "LOG_LEVEL=debug node scripts/rsk/startRSK.js",
-    "start:networks": "node scripts/startBridge.js",
-    "start:networks:debug": "LOG_LEVEL=debug node scripts/startBridge.js",
+    "start:ganache": "NODE_ENV=ganache babel-watch ./src/index.js",
+    "start:network:rsk": "NODE_ENV=rsk node scripts/network/startRSK.js",
+    "start:network:rsk:debug": "NODE_ENV=rsk LOG_LEVEL=debug node scripts/network/startRSK.js",
+    "start:network:ganache": "NODE_ENV=ganache node scripts/network/startGanache.js",
+    "start:network:ganache:debug": "NODE_ENV=ganache LOG_LEVEL=debug node scripts/network/startGanache.js",
     "serve": "pm2 startOrRestart ecosystem.config.js --env production",
     "mocha": "mocha test/ --recursive",
     "prettify": "prettier --write 'src/**/*.js*'",
@@ -53,6 +47,7 @@
     "cors": "^2.8.4",
     "dauria": "^2.0.0",
     "debug": "^3.1.0",
+    "download": "^7.1.0",
     "feathers-authentication-hooks": "0.3.0",
     "feathers-blob": "2.0.1",
     "feathers-hooks-common": "4.14.1",

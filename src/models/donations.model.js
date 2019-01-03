@@ -46,7 +46,6 @@ function Donation(app) {
         default: DonationStatus.PENDING,
       },
       txHash: { type: String, index: true },
-      homeTxHash: { type: String },
       commitTime: { type: Date },
       mined: { type: Boolean, default: false, required: true },
       parentDonations: { type: [String], default: [], required: true },

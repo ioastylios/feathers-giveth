@@ -21,7 +21,6 @@ Welcome to the server code for Giveth's [dapp](https://github.com/Giveth/giveth-
 - [Debugging](#debugging)
 - [Usage](#usage)
 - [Production](#production)
-- [RSK](#rsk)
 - [Help](#help)
 
 ## Getting Started
@@ -50,41 +49,54 @@ Welcome to the server code for Giveth's [dapp](https://github.com/Giveth/giveth-
   - If you don't install ipfs, image uploading will be affected. You can update the config `ipfsGateway` value to use a public ipfs gateway ex. [https://ipfs.io/ipfs/](https://ipfs.io/ipfs/), however your uploads will be removed at some point
 
 ### Run server
-The feathers server will need to connect to an ethereum node via websockets. Typically this will be a local TestRPC instance. 
+The feathers server will need to connect to an ethereum node via websockets. Typically this will be a local TestRPC instance.
 The configuration param `blockchain.nodeUrl` is used to establish a connection. The default nodeUrl is `ws://localhost:8545`
 
 1. We need to deploy any contract to that we intend to call. *NOTE:* The following cmd will clear the `data` dir, thus starting off in a clean state.
 
    ```
-   yarn deploy-local
+   npm run deploy:ganache
    ```
+   or
+   ```
+   npm run deploy:rsk
+   ```
+
 
    After deploying local, make sure to copy-paste the MiniMeToken address in default.json
 
-2. We provide an easy way to start the bridge & 2 ganache-cli instances.
-  
-    ``` 
-    yarn start:networks
+2. We provide an easy way to start the local web3 nodes
+
     ```
-3. Since the bridge & ganache-cli is now running, open a new terminal window and navigate to the same feathers-giveth directory.
+    npm run start:network:ganache
+    ```
+    or
+    ```
+    npm run start:network:rsk
+    ```
+3. Since the node is now running, open a new terminal window and navigate to the same feathers-giveth directory.
 
 4. Optionally open a new terminal window and start the ipfs daemon
 
    ```
    ipfs daemon
    ```
-    
+
 5. Start your app
 
     ```
-    yarn start
+    npm run start:ganache
+    ```
+    or
+    ```
+    npm run start:rsk
     ```
 
 ### Kill Ganache
 If you run into errors like wallet balance not loading, it is very likely that Ganache is stuck
 `netstat -vanp tcp | grep 8545`
 Find the process that is listening on `*.8545` and `127.0.0.1.8545` and kill it with `kill -9 PID` (which is in the last colomn)
-    
+
 ### IPFS Support
 If the `ipfsApi` is a valid ipfs node that we can connect to, we will pin every ipfs hash that is stored in feathers. We currently do not remove any orphaned (hashes with no references in feathers) ipfs hashs. In the future we will provide a script that you can run as a cronjob to unpin any orphaned hashes.
 
@@ -98,16 +110,6 @@ Video tutorial walkthrough here: https://tinyurl.com/y9lx6jrl
     ```
     yarn serve
     ```
-    
-## Scripts
-
-The `feathers-giveth/scripts` directory contains a few scripts to help development.
-
-`deploy.js` - deploys a new vault & liquidPledging contract
-
-`getState.js` - prints the current state of the deployed vault & liquidPledging contracts.
-
-`confirm.js` - confirms any payments that are pending in the vault 
 
 ## Testing
 
@@ -162,39 +164,6 @@ module.exports = {
 };
 ```
 
-## RSK
-
-1. You will need to download the [rsk node](https://github.com/rsksmart/rskj/wiki/Install-RskJ-and-join-the-RSK-Orchid-Mainnet-Beta). After installing, you will run the node w/ the `regtest` network for local development.
-
-  ```
-  java -jar rskj-core-0.5.2-ORCHID-all.jar co.rsk.Start --regtest
-  ```
-  or 
-  ```
-  java -Drsk.conf.file=rsk.conf -jar rskj-core-0.5.2-ORCHID-all.jar co.rsk.Start
-  ```
-
-2. We need to deploy any contracts that we intend to call. *NOTE:* You will also need to ensure that your rsk node is in a clean state (reset) for the configured addresses to be correct.
-
-   ```
-   npm run deploy-local:rsk
-   ```
-
-3. Optionally open a new terminal window and start the ipfs daemon
-
-   ```
-   ipfs daemon
-   ```
-    
-4. Start your app
-
-    ```
-    yarn start:rsk
-    ```
-
-
 ## Help
 
 For more info on how to work with feathers checkout out their docs on [service methods](https://docs.feathersjs.com/api/databases/common.html#service-methods), [service events](https://docs.feathersjs.com/api/events.html#service-events), and [database querying](https://docs.feathersjs.com/api/databases/querying.html).
-
-Also feel free to reach out to us on [slack](http://slack.giveth.io) for any help or to share ideas.

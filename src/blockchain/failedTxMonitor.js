@@ -85,7 +85,6 @@ function createFailedDonationSingleParentMutation(parentDonation, donation) {
  */
 const failedTxMonitor = (app, eventWatcher) => {
   const web3 = app.getWeb3();
-  const homeWeb3 = app.getHomeWeb3();
   const decoders = eventDecoders();
   const { requiredConfirmations } = app.get('blockchain');
 
@@ -207,24 +206,6 @@ const failedTxMonitor = (app, eventWatcher) => {
 
       eventWatcher.addEvent(decoders.lp[topic.name](log));
     });
-  }
-
-  async function updateInitialDonationIfFailed(currentBlock, donation) {
-    if (!donation.homeTxHash) return;
-
-    const receipt = await homeWeb3.eth.getTransactionReceipt(donation.homeTxHash);
-    const topics = topicsFromArtifacts([LiquidPledgingArtifact], ['Transfer']);
-
-    // TODO low priority as it isn't likely, but would be good to check foreignBridge for a Deposit
-    // event w/ homeTx === donation.homeTxHash and reprocess the event if necessary. This would require
-    // re-deploying the ForeignGivethBridge w/ homeTx as an indexed event param
-    if (!receipt) {
-      handlePendingDonation(currentBlock, donation, receipt, topics);
-    } else {
-      logger.error(
-        'donation has status === `Pending` but home transaction was successful. Was the donation correctly bridged?',
-      );
-    }
   }
 
   async function updateDonationIfFailed(currentBlock, donation) {
@@ -411,12 +392,7 @@ const failedTxMonitor = (app, eventWatcher) => {
         getPendingDonations(app),
       ]);
 
-      pendingDonations.forEach(
-        d =>
-          d.txHash
-            ? updateDonationIfFailed(blockNumber, d)
-            : updateInitialDonationIfFailed(blockNumber, d),
-      );
+      pendingDonations.forEach(d => updateDonationIfFailed(blockNumber, d));
     } catch (e) {
       logger.error(e);
     }
