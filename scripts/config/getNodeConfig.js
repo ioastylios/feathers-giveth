@@ -16,6 +16,19 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
         symbol: 'ETH',
         configFilename: './config/ganache.json',
         nodeId: 88,
+        fiatWhitelist: [
+          'AUD',
+          'BRL',
+          'CAD',
+          'CHF',
+          'CZK',
+          'ETH',
+          'EUR',
+          'GBP',
+          'MXN',
+          'THB',
+          'USD',
+        ],
       };
 
     case 'rsk':
@@ -31,14 +44,40 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
         symbol: 'RBTC',
         configFilename: './config/rsk.json',
         nodeId: 88,
+        fiatWhitelist: [
+          'AUD',
+          'BRL',
+          'CAD',
+          'CHF',
+          'CZK',
+          'BTC',
+          'EUR',
+          'GBP',
+          'MXN',
+          'THB',
+          'USD',
+        ],
       };
     case 'rsk_testnet':
       return {
         network: 'rsk_testnet',
         provider: 'http://68.183.77.54:4343',
         configFilename: './config/rsk_testnet.json',
-        mongoUrl: 'mongodb://localhost:27017/giveth_rsk',
-        blockchainDatabase: './data/rsk',
+        mongoUrl: 'mongodb://localhost:27017/giveth_rsk_testnet',
+        symbol: 'RBTC',
+        fiatWhitelist: [
+          'AUD',
+          'BRL',
+          'CAD',
+          'CHF',
+          'CZK',
+          'BTC',
+          'EUR',
+          'GBP',
+          'MXN',
+          'THB',
+          'USD',
+        ],
       };
     // case 'RINKEBY':
     //   config = { provider: 'http://rinkeby.infure.io' };

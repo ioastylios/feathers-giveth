@@ -55,6 +55,7 @@ async function deployProcess() {
       lppCampaignFactory: contracts.lppCampaignFactory,
       lppCappedMilestoneFactory: contracts.lppCappedMilestoneFactory,
     },
+    fiatWhitelist: [tokenInfo.symbol, ...config.fiatWhitelist],
 
     tokenWhitelist: [
       {
@@ -93,6 +94,7 @@ async function deployProcess() {
     REACT_APP_CAMPAIGN_FACTORY_ADDRESS=${appConfig.lppCampaignFactoryAddress} \\
     REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS=${appConfig.lppCappedMilestoneFactoryAddress} \\
     REACT_APP_NETWORK_NAME=${appConfig.networkName} \\
+    REACT_APP_NATIVE_TOKEN_NAME=${appConfig.symbol} \\
     npm run start`);
 
   process.exit();

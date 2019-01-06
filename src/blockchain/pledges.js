@@ -1,8 +1,5 @@
-const ForeignGivethBridgeArtifact = require('giveth-bridge/build/ForeignGivethBridge.json');
 const logger = require('winston');
 const { toBN } = require('web3-utils');
-const eventDecodersFromArtifact = require('./lib/eventDecodersFromArtifact');
-const topicsFromArtifacts = require('./lib/topicsFromArtifacts');
 const { getBlockTimestamp } = require('./lib/web3Helpers');
 const { CampaignStatus } = require('../models/campaigns.model');
 const { DonationStatus } = require('../models/donations.model');
@@ -300,7 +297,7 @@ const pledges = (app, liquidPledging) => {
    * @param {object} transferInfo
    */
   async function createToDonation(transferInfo) {
-    const { txHash, donations } = transferInfo;
+    const { donations } = transferInfo;
     const isInitialTransfer = donations.length === 1 && donations[0].parentDonations.length === 0;
     const mutation = createToDonationMutation(
       app,
