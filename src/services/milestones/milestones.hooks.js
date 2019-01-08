@@ -84,7 +84,7 @@ const restrict = () => context => {
       'reviewerAddress',
       'recipientAddress',
       'campaignReviewerAddress',
-      'convetsionRateTimestamp',
+      'conversionRateTimestamp',
       'fiatAmount',
       'conversionRate',
       'selectedFiatType',
