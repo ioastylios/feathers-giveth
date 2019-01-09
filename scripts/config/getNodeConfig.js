@@ -78,6 +78,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
             'THB',
             'USD',
           ],
+          configFilename: './config/rsk_testnet.json',
 
           // These comes from secrets.js
           provider: undefined,

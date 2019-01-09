@@ -26,17 +26,17 @@ module.exports = (
       console.log(` - Contract deployed: ${Token.$address}`);
 
       // Transfer tokens from account[0] to all other accounts
-      // @dev:  deliberately not using Promises here so that each account is funded consecutively 
+      // @dev:  deliberately not using Promises here so that each account is funded consecutively
       //        RSK nodes don't handle promises very well as that fires all txs requests at once
       let balance;
 
-      for (let a of accounts) {
+      for (const a of accounts) {
         console.log(`Funding account ${a}`);
-        await Token.transfer(a, web3.utils.toWei('100000'), { from })
-        
+        await Token.transfer(a, web3.utils.toWei('100000'), { from });
+
         balance = await Token.balanceOf(a);
         console.log(` - balance: ${web3.utils.fromWei(balance)} ${tokenSymbol}`);
-        
+
         // wait for next tx, to give the RSK node some time to rest
         await sleep(2000);
       }

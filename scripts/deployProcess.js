@@ -15,7 +15,7 @@ async function deployProcess() {
   if (!config) process.exit();
 
   // Accounts to be funded
-  const ganacheAccounts = [
+  let ganacheAccounts = [
     '0x90f8bf6a479f320ead074411a4b0e7944ea8c9c1',
     '0xffcf8fdee72ac11b5c542428b35eef5769c409f0',
     '0x22d491bde2303f2f43325b2108d26f1eaba1e32b',
@@ -31,6 +31,7 @@ async function deployProcess() {
 
   // Get web3 provider and default accounts
   const { web3, accounts, child } = await getWeb3(config);
+  if (config.private_keys) ganacheAccounts = accounts;
 
   console.log('Using accounts:\n', accounts, '\n');
 
@@ -57,17 +58,20 @@ async function deployProcess() {
       lppCampaignFactory: contracts.lppCampaignFactory,
       lppCappedMilestoneFactory: contracts.lppCappedMilestoneFactory,
     },
-    fiatWhitelist: [tokenInfo.symbol, ...config.fiatWhitelist],
+    fiatWhitelist: [...config.fiatWhitelist],
+  };
 
-    tokenWhitelist: [
+  if (tokenInfo) {
+    config.fiatWhitelist.push(tokenInfo.symbol);
+    config.tokenWhitelist = [
       {
         name: tokenInfo.token.name,
         address: tokenInfo.token.address,
         symbol: tokenInfo.token.symbol,
         decimals: tokenInfo.token.decimals,
       },
-    ],
-  };
+    ];
+  }
   console.log('\n');
   const queryWriteConfiguration = await new Confirm('Write the configuration files?').run();
   if (queryWriteConfiguration)
