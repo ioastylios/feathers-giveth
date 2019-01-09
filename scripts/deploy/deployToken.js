@@ -1,5 +1,9 @@
 const GivethTestToken = require('./../../src/contracts/js/GivethTestToken.js');
 
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 module.exports = (
   web3,
   accounts,
@@ -10,27 +14,33 @@ module.exports = (
 
   return new Promise(async (resolve, reject) => {
     try {
+      // Deploy token contract
       const Token = await GivethTestToken.new(
         web3,
         tokenName,
         tokenSymbol,
         tokenDecimals,
-        web3.utils.toWei('1000000'),
+        web3.utils.toWei('1100000'),
         { from },
       );
       console.log(` - Contract deployed: ${Token.$address}`);
 
       // Transfer tokens from account[0] to all other accounts
-      await Promise.all(accounts.map(a => Token.transfer(a, web3.utils.toWei('100000'), { from })));
-      console.log(` - Accounts funded:`);
+      // @dev:  deliberately not using Promises here so that each account is funded consecutively 
+      //        RSK nodes don't handle promises very well as that fires all txs requests at once
+      let balance;
 
-      // Fetching balances
-      await Promise.all(
-        accounts.map(async a => {
-          const balance = await Token.balanceOf(a);
-          console.log(`   ${a} balance: ${web3.utils.fromWei(balance)} ${tokenSymbol}`);
-        }),
-      );
+      for (let a of accounts) {
+        console.log(`Funding account ${a}`);
+        await Token.transfer(a, web3.utils.toWei('100000'), { from })
+        
+        balance = await Token.balanceOf(a);
+        console.log(` - balance: ${web3.utils.fromWei(balance)} ${tokenSymbol}`);
+        
+        // wait for next tx, to give the RSK node some time to rest
+        await sleep(2000);
+      }
+
       resolve({
         token: {
           name: tokenName,
