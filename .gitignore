@@ -4,6 +4,7 @@ config
 !config/default.json
 !scripts/config
 ecosystem.config.js
+secrets
 
 # Logs
 logs

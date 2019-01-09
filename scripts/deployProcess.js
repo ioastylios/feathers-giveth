@@ -32,6 +32,8 @@ async function deployProcess() {
   // Get web3 provider and default accounts
   const { web3, accounts, child } = await getWeb3(config);
 
+  console.log('Using accounts:\n', accounts, '\n');
+
   // Deploy all the contracts
   const contracts = await deployContracts(web3, accounts[0]);
 

@@ -1,3 +1,5 @@
+const secrets = require('./secrets');
+
 /**
  * Get the specific configuration for the blockchain to be used for deployment
  *
@@ -59,26 +61,31 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
         ],
       };
     case 'rsk_testnet':
-      return {
-        network: 'rsk_testnet',
-        provider: 'http://68.183.77.54:4343',
-        configFilename: './config/rsk_testnet.json',
-        mongoUrl: 'mongodb://localhost:27017/giveth_rsk_testnet',
-        symbol: 'RBTC',
-        fiatWhitelist: [
-          'AUD',
-          'BRL',
-          'CAD',
-          'CHF',
-          'CZK',
-          'BTC',
-          'EUR',
-          'GBP',
-          'MXN',
-          'THB',
-          'USD',
-        ],
-      };
+      return Object.assign(
+        {
+          network: 'rsk_testnet',
+          symbol: 'RBTC',
+          fiatWhitelist: [
+            'AUD',
+            'BRL',
+            'CAD',
+            'CHF',
+            'CZK',
+            'BTC',
+            'EUR',
+            'GBP',
+            'MXN',
+            'THB',
+            'USD',
+          ],
+
+          // These comes from secrets.js
+          provider: undefined,
+          mongoUrl: undefined,
+          private_keys: undefined,
+        },
+        secrets.rsk_testnet,
+      );
     // case 'RINKEBY':
     //   config = { provider: 'http://rinkeby.infure.io' };
     //   break;

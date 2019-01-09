@@ -57,7 +57,13 @@ module.exports = function getWeb3(config = getNodeConfig()) {
       // Try and connect to the web3 provider
       console.log(`Attempting to connect to the web3 provider ${config.provider}`);
       web3 = new Web3(config.provider);
-      accounts = await web3.eth.getAccounts();
+      if (config.private_keys) {
+        const acc = await Promise.all(
+          config.private_keys.map(pk => web3.eth.accounts.privateKeyToAccount(pk)),
+        );
+        await Promise.all(acc.map(a => web3.eth.accounts.wallet.add(a)));
+        accounts = acc.map(a => a.address);
+      } else accounts = await web3.eth.getAccounts();
 
       resolve({ web3, accounts, spawned: false });
     } catch (e) {

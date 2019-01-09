@@ -21,6 +21,7 @@
     "eslint:fix": "eslint src/. test/. --fix",
     "deploy:ganache": "NODE_ENV=ganache node scripts/deployProcess.js",
     "deploy:rsk": "NODE_ENV=rsk node scripts/deployProcess.js",
+    "deploy:rsk_testnet": "NODE_ENV=rsk_testnet node scripts/deployProcess.js",
     "start:rsk": "NODE_ENV=rsk babel-watch ./src/index.js",
     "start:ganache": "NODE_ENV=ganache babel-watch ./src/index.js",
     "start:network:rsk": "NODE_ENV=rsk node scripts/network/startRSK.js",
