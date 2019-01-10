@@ -1,6 +1,7 @@
 const { LiquidPledging, LPVault, Kernel } = require('giveth-liquidpledging');
 const { LPPCappedMilestone } = require('lpp-capped-milestone');
 const { keccak256, padLeft, toHex } = require('web3-utils');
+const semaphore = require('semaphore');
 const logger = require('winston');
 
 const processingQueue = require('../utils/processingQueue');
@@ -61,6 +62,7 @@ const watcher = (app, eventHandler) => {
   const requiredConfirmations = app.get('blockchain').requiredConfirmations || 0;
   const queue = processingQueue('NewEventQueue');
   const eventService = app.service('events');
+  const sem = semaphore();
 
   const { vaultAddress } = app.get('blockchain');
   const lpVault = new LPVault(web3, vaultAddress);
@@ -126,7 +128,7 @@ const watcher = (app, eventHandler) => {
    * processing of events with the same id.
    */
   function newEvent(event, isReprocess = false) {
-    if (!isReprocess) setLastBlock(event.blockNumber);
+    setLastBlock(event.blockNumber);
 
     logger.info('newEvent called', event);
     // during a reorg, the same event can occur in quick succession, so we add everything to a
@@ -255,8 +257,80 @@ const watcher = (app, eventHandler) => {
     await lpVault.$contract.getPastEvents({ fromBlock }).then(events => events.forEach(newEvent));
   }
 
+  /**
+   * fetch any events that have a status `Waiting`
+   * @param {object} eventsService feathersjs `events` service
+   * @returns {array} events sorted by transactionHash & logIndex
+   */
+  async function getWaitingEvents(eventsService) {
+    // all unconfirmed events sorted by txHash & logIndex
+    const query = {
+      status: EventStatus.WAITING,
+      $sort: { blockNumber: 1, transactionIndex: 1, transactionHash: 1, logIndex: 1 },
+    };
+    return eventsService.find({ paginate: false, query });
+  }
+
+  async function getUnconfirmedEventsByConfirmations(currentBlock) {
+    const unconfirmedEvents = await getWaitingEvents(eventService);
+
+    // sort the events into buckets by # of confirmations
+    return unconfirmedEvents.reduce((val, event) => {
+      const diff = currentBlock - event.blockNumber;
+      const c = diff >= requiredConfirmations ? requiredConfirmations : diff;
+
+      if (requiredConfirmations === 0 || c > 0) {
+        // eslint-disable-next-line no-param-reassign
+        if (!val[c]) val[c] = [];
+        val[c].push(event);
+      }
+      return val;
+    }, []);
+  }
+
+  /**
+   * Finds all un-confirmed events, updates the # of confirmations and initiates
+   * processing of the event if the requiredConfirmations has been reached
+   */
+  async function updateEventConfirmations(currentBlock) {
+    sem.take(async () => {
+      try {
+        const [err, eventsByConfirmations] = await to(
+          getUnconfirmedEventsByConfirmations(currentBlock),
+        );
+
+        if (err) {
+          logger.error('Error fetching un-confirmed events', err);
+          sem.leave();
+          return;
+        }
+
+        // updated the # of confirmations for the events and process the event if confirmed
+        await Promise.all(
+          eventsByConfirmations.map(async (e, confirmations) => {
+            if (confirmations === requiredConfirmations) {
+              await processEvents(e);
+            } else {
+              await eventService.patch(
+                null,
+                { confirmations },
+                { query: { blockNumber: currentBlock - requiredConfirmations + confirmations } },
+              );
+            }
+          }),
+        );
+      } catch (err) {
+        logger.error('error calling updateConfirmations', err);
+      }
+      sem.leave();
+    });
+  }
+
   const processPastEvents = async () => {
     const latestBlockNum = await web3.eth.getBlockNumber();
+
+    console.log(`Process Past Events called ${lastBlock}-${latestBlockNum}`);
+
     if (lastBlock === latestBlockNum) return;
 
     logger.info(`Checking new events between blocks ${lastBlock}-${latestBlockNum}`);
@@ -266,17 +340,10 @@ const watcher = (app, eventHandler) => {
     // start processing any events that have not been processed
     processEvents(await getUnProcessedEvents(eventService));
 
-    //
-    // if (!block.number || !fetchedPastEvents) return;
-    // updateEventConfirmations(block.number);
+    updateEventConfirmations(latestBlockNum);
   };
 
-  // exposed api
-
   return {
-    /**
-     * subscribe to all events that we are interested in
-     */
     async start() {
       setLastBlock(await getLastBlock(app));
 

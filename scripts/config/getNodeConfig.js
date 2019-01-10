@@ -45,7 +45,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
         config: './scripts/config/rsk_node.conf',
         symbol: 'RBTC',
         configFilename: './config/rsk.json',
-        nodeId: 88,
+        nodeId: 33,
         fiatWhitelist: [
           'AUD',
           'BRL',
@@ -79,6 +79,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
             'USD',
           ],
           configFilename: './config/rsk_testnet.json',
+          nodeId: 31,
 
           // These comes from secrets.js
           provider: undefined,

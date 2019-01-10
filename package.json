@@ -24,6 +24,7 @@
     "deploy:rsk_testnet": "NODE_ENV=rsk_testnet node scripts/deployProcess.js",
     "start:rsk": "NODE_ENV=rsk babel-watch ./src/index.js",
     "start:ganache": "NODE_ENV=ganache babel-watch ./src/index.js",
+    "start:rsk_testnet": "NODE_ENV=rsk_testnet babel-watch ./src/index.js",
     "start:network:rsk": "NODE_ENV=rsk node scripts/network/startRSK.js",
     "start:network:rsk:debug": "NODE_ENV=rsk LOG_LEVEL=debug node scripts/network/startRSK.js",
     "start:network:ganache": "NODE_ENV=ganache node scripts/network/startGanache.js",
