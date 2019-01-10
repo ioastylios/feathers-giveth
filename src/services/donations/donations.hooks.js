@@ -1,6 +1,8 @@
 /* eslint-disable no-unused-vars */
+const BigNumber = require('bignumber.js');
 const errors = require('@feathersjs/errors');
 const commons = require('feathers-hooks-common');
+const logger = require('winston');
 
 const sanitizeAddress = require('../../hooks/sanitizeAddress');
 const setAddress = require('../../hooks/setAddress');
@@ -9,7 +11,7 @@ const { DonationStatus } = require('../../models/donations.model');
 const { AdminTypes } = require('../../models/pledgeAdmins.model');
 const { MilestoneStatus } = require('../../models/milestones.model');
 
-const updateEntityCounters = require('./updateEntityCounters');
+const { updateDonationEntityCountersHook } = require('./updateEntityCounters');
 
 const poSchemas = {
   'po-giver': {
@@ -237,9 +239,9 @@ module.exports = {
     all: [populateSchema()],
     find: [addConfirmations()],
     get: [addConfirmations()],
-    create: [updateEntityCounters()],
+    create: [updateDonationEntityCountersHook()],
     update: [],
-    patch: [updateEntityCounters()],
+    patch: [updateDonationEntityCountersHook()],
     remove: [],
   },
 
