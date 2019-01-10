@@ -60,7 +60,7 @@ async function deployProcess() {
   if (queryDeployToken) {
     tokenInfo = await deployToken(web3, ganacheAccounts, accounts[0]);
 
-    configuration.fiatWhitelist.push(tokenInfo.symbol);
+    configuration.fiatWhitelist.push(tokenInfo.token.symbol);
     configuration.tokenWhitelist.push({
       name: tokenInfo.token.name,
       address: tokenInfo.token.address,
