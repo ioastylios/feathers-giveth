@@ -14,7 +14,7 @@ const ganacheAccounts = [
  * @param  {Web3Account}   from      A web3 account pointer
  */
 module.exports = (web3, accounts = ganacheAccounts, from, { symbol = 'ETH' } = {}) => {
-  const value = web3.utils.toWei('10');
+  const value = web3.utils.toWei('100');
 
   return new Promise(async (resolve, reject) => {
     try {
