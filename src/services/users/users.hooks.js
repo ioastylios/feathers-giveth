@@ -5,7 +5,6 @@ const { toChecksumAddress } = require('web3-utils');
 const notifyOfChange = require('../../hooks/notifyOfChange');
 const sanitizeAddress = require('../../hooks/sanitizeAddress');
 const setAddress = require('../../hooks/setAddress');
-const fundWallet = require('../../hooks/fundWallet');
 const resolveFiles = require('../../hooks/resolveFiles');
 
 const normalizeId = () => context => {
@@ -60,7 +59,7 @@ module.exports = {
     all: [commons.discard('_id')],
     find: [resolveFiles('avatar')],
     get: [resolveFiles('avatar')],
-    create: [fundWallet(), resolveFiles('avatar')],
+    create: [resolveFiles('avatar')],
     update: [resolveFiles('avatar'), notifyOfChange(...notifyParents)],
     patch: [resolveFiles('avatar'), notifyOfChange(...notifyParents)],
     remove: [notifyOfChange(...notifyParents)],
