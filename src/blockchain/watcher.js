@@ -77,7 +77,6 @@ const watcher = (app, eventHandler) => {
   const lpVault = new LPVault(web3, vaultAddress);
   const { liquidPledgingAddress } = app.get('blockchain');
   const liquidPledging = new LiquidPledging(web3, liquidPledgingAddress);
-  const lppCappedMilestoneTopics = getLppCappedMilestoneTopics(liquidPledging);
   let kernel;
 
   let lastBlock = 0;
@@ -238,7 +237,7 @@ const watcher = (app, eventHandler) => {
       }),
       await web3.eth.getPastLogs({
         fromBlock,
-        topics: lppCappedMilestoneTopics,
+        topics: getLppCappedMilestoneTopics(liquidPledging),
       }),
       await lpVault.$contract.getPastEvents({ fromBlock }),
     );
