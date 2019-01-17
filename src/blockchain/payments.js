@@ -42,7 +42,7 @@ const payments = app => ({
    * @param {object} event Web3 event object
    */
   async confirmPayment(event) {
-    if (event.event !== 'confirmPayment') {
+    if (event.event !== 'ConfirmPayment') {
       throw new Error('confirmPayment only handles ConfirmPayment events');
     }
 
