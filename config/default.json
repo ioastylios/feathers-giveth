@@ -67,14 +67,6 @@
     "0xe11ba2b4d45eaed5996cd0823791e0c93114882d",
     "0xd03ea8624c8c5987235048901fb614fdca89b117"
   ],
-  "tokenWhitelist": [
-    {
-      "name": "Home Ganache ETH",
-      "address": "0x0000000000000000000000000000000000000000",
-      "symbol": "ETH",
-      "decimals": 18
-    }
-  ],
   "fiatWhitelist":
     ["AUD", "BRL", "CAD", "CHF", "CZK", "DAI", "ETH", "EUR", "GBP", "MXN", "THB", "USD"]
   ,

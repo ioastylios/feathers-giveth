@@ -113,6 +113,11 @@ const watcher = (app, eventHandler) => {
 
     logger.debug('newEvent called', event);
 
+    if (!event || !event.event || !event.signature || !event.returnValues || !event.raw) {
+      logger.error('Attempted to add undefined event or event with undefined values: ', event);
+      return;
+    }
+
     try {
       // Check for existing event
       const query = {
@@ -305,7 +310,6 @@ const watcher = (app, eventHandler) => {
         logger.info(`Checking new events between blocks ${lastBlock}-${latestBlockNum}`);
 
         const events = await fetchPastEvents(lastBlock, latestBlockNum);
-        setLastBlock(latestBlockNum);
 
         await Promise.all(events.map(newEvent));
       }

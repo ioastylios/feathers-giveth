@@ -30,7 +30,7 @@ async function deployProcess() {
       requiredConfirmations: config.requiredConfirmations,
     },
     fiatWhitelist: [...config.fiatWhitelist],
-    tokenWhitelist: [],
+    tokenWhitelist: config.tokenWhitelist,
   };
 
   console.log('\n');

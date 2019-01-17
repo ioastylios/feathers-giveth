@@ -32,6 +32,14 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
           'THB',
           'USD',
         ],
+        tokenWhitelist: [
+          {
+            name: 'Ganache ETH',
+            address: '0x0000000000000000000000000000000000000000',
+            symbol: 'ETH',
+            decimals: 18,
+          },
+        ],
       };
 
     case 'rsk':
@@ -61,6 +69,14 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
           'THB',
           'USD',
         ],
+        tokenWhitelist: [
+          {
+            name: 'Regtest RBTC',
+            address: '0x0000000000000000000000000000000000000000',
+            symbol: 'RBTC',
+            decimals: 18,
+          },
+        ],
       };
     case 'rsk_testnet':
       return Object.assign(
@@ -82,6 +98,14 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
           ],
           configFilename: './config/rsk_testnet.json',
           nodeId: 31,
+          tokenWhitelist: [
+            {
+              name: 'Testnet RBTC',
+              address: '0x0000000000000000000000000000000000000000',
+              symbol: 'RBTC',
+              decimals: 18,
+            },
+          ],
 
           // These comes from secrets.js
           provider: undefined,

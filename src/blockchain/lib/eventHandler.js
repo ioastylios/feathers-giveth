@@ -37,7 +37,7 @@ const eventHandler = app => {
 
     // lp vault events
     AuthorizePayment: payments.authorizePayment,
-    ConfirmPayment: undefined,
+    ConfirmPayment: payments.confirmPayment,
     CancelPayment: undefined,
 
     // lpp-capped-milestone events
