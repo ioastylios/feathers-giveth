@@ -119,3 +119,4 @@ $RECYCLE.BIN/
 data/
 /uploads
 scripts/bin
+package-lock.json
