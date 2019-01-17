@@ -4,7 +4,6 @@ const paymentsFactory = require('../payments');
 const adminsFactory = require('../admins');
 const pledgesFactory = require('../pledges');
 const cappedMilestonesFactory = require('../cappedMilestones');
-const processingQueue = require('../../utils/processingQueue');
 
 const eventHandler = app => {
   const web3 = app.getWeb3();
@@ -16,12 +15,41 @@ const eventHandler = app => {
   }
 
   const liquidPledging = new LiquidPledging(web3, liquidPledgingAddress);
-  const queue = processingQueue('eventHandler');
 
   const payments = paymentsFactory(app);
   const admins = adminsFactory(app, liquidPledging);
   const pledges = pledgesFactory(app, liquidPledging);
   const cappedMilestones = cappedMilestonesFactory(app);
+
+  const handlers = {
+    // lp admin events
+    GiverAdded: admins.addGiver,
+    GiverUpdated: admins.updateGiver,
+    DelegateAdded: admins.addDelegate,
+    DelegateUpdated: admins.updateDelegate,
+    ProjectAdded: admins.addProject,
+    ProjectUpdated: admins.updateProject,
+    CancelProject: admins.cancelProject,
+    SetApp: admins.setApp,
+
+    // lp pledge events
+    Transfer: pledges.transfer,
+
+    // lp vault events
+    AuthorizePayment: payments.authorizePayment,
+    ConfirmPayment: undefined,
+    CancelPayment: undefined,
+
+    // lpp-capped-milestone events
+    MilestoneCompleteRequested: cappedMilestones.reviewRequested,
+    MilestoneCompleteRequestRejected: cappedMilestones.rejected,
+    MilestoneCompleteRequestApproved: cappedMilestones.accepted,
+    MilestoneChangeReviewerRequested: undefined,
+    MilestoneReviewerChanged: undefined,
+    MilestoneChangeRecipientRequested: undefined,
+    MilestoneRecipientChanged: undefined,
+    PaymentCollected: cappedMilestones.paymentCollected,
+  };
 
   return {
     /**
@@ -30,63 +58,22 @@ const eventHandler = app => {
      * @param {object} event Web3 event/log object
      */
     handle(event) {
-      const handlers = {
-        // lp admin events
-        GiverAdded: admins.addGiver,
-        GiverUpdated: admins.updateGiver,
-        DelegateAdded: admins.addDelegate,
-        DelegateUpdated: admins.updateDelegate,
-        ProjectAdded: admins.addProject,
-        ProjectUpdated: admins.updateProject,
-        CancelProject: admins.cancelProject,
-        SetApp: admins.setApp,
+      return new Promise(async (resolve, reject) => {
+        const handler = handlers[event.event];
 
-        // lp pledge events
-        Transfer: pledges.transfer,
+        if (typeof handler !== 'function') {
+          logger.error('Unknown event: ', event.event);
+          resolve();
+        }
 
-        // lp vault events
-        AuthorizePayment: payments.authorizePayment,
-        ConfirmPayment: undefined,
-        CancelPayment: undefined,
-
-        // lpp-capped-milestone events
-        MilestoneCompleteRequested: cappedMilestones.reviewRequested,
-        MilestoneCompleteRequestRejected: cappedMilestones.rejected,
-        MilestoneCompleteRequestApproved: cappedMilestones.accepted,
-        MilestoneChangeReviewerRequested: undefined,
-        MilestoneReviewerChanged: undefined,
-        MilestoneChangeRecipientRequested: undefined,
-        MilestoneRecipientChanged: undefined,
-        PaymentCollected: cappedMilestones.paymentCollected,
-      };
-
-      const handler = handlers[event.event];
-
-      if (typeof handler !== 'function') {
-        logger.error('Unknown event: ', event.event);
-        return Promise.resolve();
-      }
-
-      return new Promise((resolve, reject) => {
-        const fn = async () => {
-          try {
-            logger.info('Handling Event: ', event);
-            await handler(event);
-            resolve();
-          } catch (err) {
-            logger.error(err);
-            reject(err);
-          }
-          queue.purge();
-        };
-
-        Object.defineProperty(fn, 'name', {
-          value: `${event.event} - ${event.blockNumber} - ${event.id}`,
-        });
-        queue.add(fn);
-
-        // start processing the queued events if we haven't already
-        if (!queue.isProcessing()) queue.purge();
+        try {
+          logger.info('Handling Event: ', event);
+          await handler(event);
+          resolve();
+        } catch (err) {
+          logger.error(err);
+          reject(err);
+        }
       });
     },
   };

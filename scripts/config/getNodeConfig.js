@@ -15,6 +15,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
         provider: 'http://localhost:8545',
         mongoUrl: 'mongodb://localhost:27017/giveth_ganache',
         blockchainDatabase: './data/ganache',
+        requiredConfirmations: 0,
         symbol: 'ETH',
         configFilename: './config/ganache.json',
         nodeId: 88,
@@ -39,6 +40,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
         provider: 'http://localhost:4444',
         mongoUrl: 'mongodb://localhost:27017/giveth_rsk',
         blockchainDatabase: './data/rsk',
+        requiredConfirmations: 0,
         nodeDownloadURL:
           'https://github.com/rsksmart/rskj/releases/download/ORCHID-0.5.3/rskj-core-0.5.3-ORCHID-all.jar',
         binPath: './scripts/bin/rskj-core-0.5.3-ORCHID-all.jar',

@@ -27,6 +27,7 @@ async function deployProcess() {
     mongodb: config.mongoUrl,
     blockchain: {
       nodeUrl: config.provider,
+      requiredConfirmations: config.requiredConfirmations,
     },
     fiatWhitelist: [...config.fiatWhitelist],
     tokenWhitelist: [],

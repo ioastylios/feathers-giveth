@@ -1,4 +1,3 @@
-const ForeignGivethBridgeArtifact = require('giveth-bridge/build/ForeignGivethBridge.json');
 const LiquidPledgingArtifact = require('giveth-liquidpledging/build/LiquidPledging.json');
 const logger = require('winston');
 const { toBN } = require('web3-utils');
@@ -163,40 +162,6 @@ const pledges = (app, liquidPledging) => {
   const pledgeAdmins = app.service('pledgeAdmins');
 
   /**
-   * Attempts to fetch the homeTxHash for an initial donation into lp.
-   *
-   * b/c we are using the bridge, we expect the ForeignGivethBridge Deposit event
-   * to occur in the same tx as the initial donation.
-   *
-   * @param {string} txHash txHash of the initialDonation to attempt to fetch a homeTxHash for
-   * @returns {string|undefined} homeTxHash if found
-   */
-  async function getHomeTxHash(txHash) {
-    const decoders = eventDecodersFromArtifact(ForeignGivethBridgeArtifact);
-
-    const [err, receipt] = await toWrapper(web3.eth.getTransactionReceipt(txHash));
-
-    if (err || !receipt) {
-      logger.error('Error fetching transaction, or no tx receipt found ->', err, receipt);
-      return undefined;
-    }
-
-    const topics = topicsFromArtifacts([ForeignGivethBridgeArtifact], ['Deposit']);
-
-    // get logs we're interested in.
-    const logs = receipt.logs.filter(log => topics.some(t => t.hash === log.topics[0]));
-
-    if (logs.length === 0) return undefined;
-
-    const log = logs[0];
-
-    const topic = topics.find(t => t.hash === log.topics[0]);
-    const event = decoders[topic.name](log);
-
-    return event.returnValues.homeTx;
-  }
-
-  /**
    * generate a mutation object used to create/update the `to` donation
    *
    * @param {object} transferInfo object containing information regarding the Transfer event
@@ -213,7 +178,6 @@ const pledges = (app, liquidPledging) => {
       amount,
       ts,
       txHash,
-      initialTransfer,
     } = transferInfo;
 
     // find token
@@ -235,11 +199,6 @@ const pledges = (app, liquidPledging) => {
       mined: true,
       token,
     };
-
-    if (initialTransfer) {
-      // always set homeTx on mutation b/c ui checks if homeTxHash exists to check for initial donations
-      mutation.homeTxHash = (await getHomeTxHash(txHash)) || 'unknown';
-    }
 
     // lp keeps the delegation chain, but we want to ignore it
     if (![DonationStatus.PAYING, DonationStatus.PAID].includes(mutation.status) && delegate) {
@@ -370,7 +329,6 @@ const pledges = (app, liquidPledging) => {
       token,
       intendedProjectId: pledge.intendedProject,
       txHash,
-      homeTxHash: (await getHomeTxHash(txHash)) || 'unknown',
     };
 
     // we pass true to retry b/c we never create a donation that needs to be updated
@@ -499,36 +457,25 @@ const pledges = (app, liquidPledging) => {
       }
 
       const initialTransfer = isInitialTransfer(from, amount, receipt);
-
-      const promises = [
-        getPledgeAdmin(toPledge.owner),
-        getDonations(from, amount, initialTransfer, txHash),
-      ];
+      const donations = await getDonations(from, amount, initialTransfer, txHash);
 
       // In lp any delegate in the chain can delegate, but currently we only allow last delegate
       // to have that ability
+      let delegate;
       if (toPledge.nDelegates > 0) {
-        promises.push(
-          liquidPledging
-            .getPledgeDelegate(to, toPledge.nDelegates)
-            .then(delegate => getPledgeAdmin(delegate.idDelegate)),
-        );
-      } else {
-        promises.push(undefined);
+        const pledgeDelegate = await liquidPledging.getPledgeDelegate(to, toPledge.nDelegates);
+        delegate = await getPledgeAdmin(pledgeDelegate.idDelegate);
       }
 
       // fetch intendedProject pledgeAdmin
+      let intendedProject;
       if (Number(toPledge.intendedProject) > 0) {
-        promises.push(getPledgeAdmin(toPledge.intendedProject));
-      } else {
-        promises.push(undefined);
+        intendedProject = await getPledgeAdmin(toPledge.intendedProject);
       }
-
-      const [toPledgeAdmin, donations, delegate, intendedProject] = await Promise.all(promises);
 
       const transferInfo = {
         fromPledgeAdmin,
-        toPledgeAdmin,
+        toPledgeAdmin: await getPledgeAdmin(toPledge.owner),
         fromPledge,
         toPledge,
         toPledgeId: to,
@@ -566,6 +513,8 @@ const pledges = (app, liquidPledging) => {
       const { from, to, amount } = event.returnValues;
       const txHash = event.transactionHash;
       const ts = await getBlockTimestamp(web3, event.blockNumber);
+
+      // This is a new donation
       if (Number(from) === 0) {
         const [err] = await toWrapper(newDonation(to, amount, ts, txHash));
 
@@ -573,6 +522,7 @@ const pledges = (app, liquidPledging) => {
           logger.error('newDonation error ->', err);
         }
       } else {
+        // This is a transfer of existing donation
         await transfer(from, to, amount, ts, txHash);
       }
     },

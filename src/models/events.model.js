@@ -33,12 +33,15 @@ function createModel(app) {
         default: EventStatus.WAITING,
       },
       processingError: { type: String },
-      confirmations: { type: Number, require: true },
+      confirmations: { type: Number, require: true, min: 0 },
     },
     {
       timestamps: true,
     },
   );
+
+  // Ensuring there aren't any duplicate events, probably test on blockNumber and logIndex would suffice
+  event.index({ blockNumber: 1, logIndex: 1, transactionHash: 1 }, { unique: true });
 
   return mongooseClient.model('event', event);
 }

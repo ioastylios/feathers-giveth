@@ -18,7 +18,7 @@
     "nodeUrl": "ws://localhost:8546",
     "homeNodeUrl": "ws://localhost:8545",
     "startingBlock": 0,
-    "requiredConfirmations": 1,
+    "requiredConfirmations": 30,
     "vaultAddress": "0x6098441760E4614AAc6e6bb3Ec7A254C2a600b5d",
     "liquidPledgingAddress": "0xBeFdf675cb73813952C5A9E4B84ea8B866DBA592",
     "ethFunderPK": "0x6cbed15c793ce57650b9877cf6fa156fbef513c4e6134f022a85b1ffdd59b2a1"

@@ -45,7 +45,7 @@ function Donation(app) {
         enum: Object.values(DonationStatus),
         default: DonationStatus.PENDING,
       },
-      txHash: { type: String, index: true },
+      txHash: { type: String, index: true, required: true },
       commitTime: { type: Date },
       mined: { type: Boolean, default: false, required: true },
       parentDonations: { type: [String], default: [], required: true },
