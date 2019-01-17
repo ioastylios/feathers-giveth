@@ -58,6 +58,7 @@
     "feathers-mongoose": "6.1.2",
     "fs-blob-store": "^5.2.1",
     "giveth-liquidpledging": "github:Giveth/liquidpledging#native-currency-support",
+    "globby": "^9.0.0",
     "helmet": "^3.8.1",
     "ipfs-api": "^24.0.0",
     "is-ipfs": "^0.4.2",
