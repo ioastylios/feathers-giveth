@@ -1,4 +1,5 @@
 const { LiquidPledging, LPVault, Kernel } = require('giveth-liquidpledging');
+const { LPPCappedMilestone } = require('lpp-capped-milestone');
 const { keccak256, padLeft, toHex } = require('web3-utils');
 const semaphore = require('semaphore');
 const logger = require('winston');
@@ -81,6 +82,12 @@ const watcher = (app, eventHandler) => {
 
   let lastBlock = 0;
   let latestBlockNum = 0;
+
+  const lppCappedMilestone = new LPPCappedMilestone(web3).$contract;
+  const lppCappedMilestoneEventDecoder = lppCappedMilestone._decodeEventABI.bind({
+    name: 'ALLEVENTS',
+    jsonInterface: lppCappedMilestone._jsonInterface,
+  });
 
   function setLastBlock(blockNumber) {
     if (blockNumber > lastBlock) lastBlock = blockNumber;
@@ -240,10 +247,12 @@ const watcher = (app, eventHandler) => {
           name: [keccak256('lpp-capped-milestone'), keccak256('lpp-campaign')],
         },
       }),
-      await web3.eth.getPastLogs({
-        fromBlock,
-        topics: getLppCappedMilestoneTopics(liquidPledging),
-      }),
+      await web3.eth
+        .getPastLogs({
+          fromBlock,
+          topics: getLppCappedMilestoneTopics(liquidPledging),
+        })
+        .then(evnts => evnts.map(e => lppCappedMilestoneEventDecoder(e))),
       await lpVault.$contract.getPastEvents({ fromBlock }),
     );
 
