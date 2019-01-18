@@ -326,6 +326,8 @@ const watcher = (app, eventHandler) => {
           const events = await fetchPastEvents(lastBlock, latestBlockNum);
 
           await Promise.all(events.map(newEvent));
+
+          setLastBlock(latestBlockNum);
         } catch (err) {
           logger.error('Fetching past events failed: ', err);
         }
