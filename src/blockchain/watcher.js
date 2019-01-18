@@ -80,6 +80,7 @@ const watcher = (app, eventHandler) => {
   const liquidPledging = new LiquidPledging(web3, liquidPledgingAddress);
   let kernel;
 
+  let isFetchingPastEvents = semaphore(); // To indicate if the fetching process of past events is in progress or not.
   let lastBlock = 0;
   let latestBlockNum = 0;
 
@@ -230,7 +231,7 @@ const watcher = (app, eventHandler) => {
    * Fetch all events between now and the latest block
    *
    * @param  {Number} [fromBlockNum=lastBlock] The block from which onwards should the events be checked
-   * @param  {[type]} [toBlockNum=lastBlock+1] No events after this block should be returned
+   * @param  {Number} [toBlockNum=lastBlock+1] No events after this block should be returned
    *
    * @return {Promise} Resolves to an array of events between speciefied block and latest known block.
    */
@@ -315,12 +316,20 @@ const watcher = (app, eventHandler) => {
     try {
       latestBlockNum = await web3.eth.getBlockNumber();
 
-      if (lastBlock < latestBlockNum) {
-        logger.info(`Checking new events between blocks ${lastBlock}-${latestBlockNum}`);
+      if (lastBlock < latestBlockNum && !isFetchingPastEvents) {
+        // FIXME: This should likely use semaphore when setting the veriable or maybe even better extracted into different loop
+        isFetchingPastEvents = true;
 
-        const events = await fetchPastEvents(lastBlock, latestBlockNum);
+        try {
+          logger.info(`Checking new events between blocks ${lastBlock}-${latestBlockNum}`);
 
-        await Promise.all(events.map(newEvent));
+          const events = await fetchPastEvents(lastBlock, latestBlockNum);
+
+          await Promise.all(events.map(newEvent));
+        } catch (err) {
+          logger.error('Fetching past events failed: ', err);
+        }
+        isFetchingPastEvents = false;
       }
 
       await updateEventConfirmations(latestBlockNum);
