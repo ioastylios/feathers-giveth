@@ -80,7 +80,7 @@ const watcher = (app, eventHandler) => {
   const liquidPledging = new LiquidPledging(web3, liquidPledgingAddress);
   let kernel;
 
-  let isFetchingPastEvents = semaphore(); // To indicate if the fetching process of past events is in progress or not.
+  let isFetchingPastEvents = false; // To indicate if the fetching process of past events is in progress or not.
   let lastBlock = 0;
   let latestBlockNum = 0;
 
