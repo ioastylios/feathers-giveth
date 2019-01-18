@@ -53,7 +53,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
           'https://github.com/rsksmart/rskj/releases/download/ORCHID-0.5.3/rskj-core-0.5.3-ORCHID-all.jar',
         binPath: './scripts/bin/rskj-core-0.5.3-ORCHID-all.jar',
         config: './scripts/config/rsk_node.conf',
-        symbol: 'RBTC',
+        symbol: 'BTC',
         configFilename: './config/rsk.json',
         nodeId: 33,
         fiatWhitelist: [
@@ -73,7 +73,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
           {
             name: 'Regtest RBTC',
             address: '0x0000000000000000000000000000000000000000',
-            symbol: 'RBTC',
+            symbol: 'BTC',
             decimals: 18,
           },
         ],
@@ -82,7 +82,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
       return Object.assign(
         {
           network: 'rsk_testnet',
-          symbol: 'RBTC',
+          symbol: 'BTC',
           fiatWhitelist: [
             'AUD',
             'BRL',
@@ -102,7 +102,7 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
             {
               name: 'Testnet RBTC',
               address: '0x0000000000000000000000000000000000000000',
-              symbol: 'RBTC',
+              symbol: 'BTC',
               decimals: 18,
             },
           ],

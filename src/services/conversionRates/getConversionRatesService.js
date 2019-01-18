@@ -54,7 +54,7 @@ const _getRatesCryptocompare = async (timestamp, ratesToGet, symbol) => {
               ),
             );
 
-            if (resp && resp.r) rates[r] = resp.r;
+            if (resp && resp[r]) rates[r] = resp[r];
           }
           resolve();
         } catch (e) {
