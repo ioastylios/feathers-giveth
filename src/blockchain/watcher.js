@@ -237,12 +237,14 @@ const watcher = (app, eventHandler) => {
    */
   async function fetchPastEvents(fromBlockNum = lastBlock, toBlockNum = lastBlock + 1) {
     const fromBlock = toHex(fromBlockNum + 1) || toHex(1); // convert to hex due to web3 bug https://github.com/ethereum/web3.js/issues/1097
+    const toBlock = toHex(toBlockNum + 1) || toHex(1); // convert to hex due to web3 bug https://github.com/ethereum/web3.js/issues/1097
 
     // Get the events from contracts
     const events = [].concat(
-      await liquidPledging.$contract.getPastEvents({ fromBlock }),
+      await liquidPledging.$contract.getPastEvents({ fromBlock, toBlock }),
       await kernel.$contract.getPastEvents({
         fromBlock,
+        toBlock,
         filter: {
           namespace: keccak256('base'),
           name: [keccak256('lpp-capped-milestone'), keccak256('lpp-campaign')],
@@ -251,14 +253,14 @@ const watcher = (app, eventHandler) => {
       await web3.eth
         .getPastLogs({
           fromBlock,
+          toBlock,
           topics: getLppCappedMilestoneTopics(liquidPledging),
         })
         .then(evnts => evnts.map(e => lppCappedMilestoneEventDecoder(e))),
-      await lpVault.$contract.getPastEvents({ fromBlock }),
+      await lpVault.$contract.getPastEvents({ fromBlock, toBlock }),
     );
 
-    // Filter the events to not be younger than toBlockNum. This is important because in some rare scenarios new block can be added while checking the events
-    return events.filter(event => event.blockNumber <= toBlockNum);
+    return events;
   }
 
   /**
