@@ -99,7 +99,7 @@ async function deployProcess() {
   console.log('\n\nPlease modify the UI configuration:\n', JSON.stringify(appConfig, null, 4));
   console.log('\n\nor run the DApp as:');
   console.log(`
-    REACT_APP_ETH_NODE_CONNECTION_URL=${appConfig.nodeConnection} \\
+    REACT_APP_NODE_CONNECTION_URL=${appConfig.nodeConnection} \\
     REACT_APP_LIQUIDPLEDGING_ADDRESS=${appConfig.liquidPledgingAddress} \\
     REACT_APP_CAMPAIGN_FACTORY_ADDRESS=${appConfig.lppCampaignFactoryAddress} \\
     REACT_APP_CAPPED_MILESTONE_FACTORY_ADDRESS=${appConfig.lppCappedMilestoneFactoryAddress} \\
