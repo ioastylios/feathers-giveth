@@ -1,4 +1,3 @@
-const queryGasPrice = require('./blockchain/gasPriceService');
 const { queryConversionRates } = require('./services/conversionRates/getConversionRatesService');
 
 const logger = require('winston');
@@ -12,5 +11,4 @@ server.on('listening', () => {
   logger.info(`Using DappMailer url ${app.get('dappMailerUrl')}`);
 });
 
-queryGasPrice();
 queryConversionRates(app);
