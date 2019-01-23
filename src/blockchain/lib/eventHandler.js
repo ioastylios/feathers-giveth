@@ -67,7 +67,7 @@ const eventHandler = app => {
         }
 
         try {
-          logger.info('Handling Event: ', event);
+          logger.info('Handling Event: ', event._id);
           await handler(event);
           resolve();
         } catch (err) {

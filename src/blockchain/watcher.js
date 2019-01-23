@@ -159,6 +159,7 @@ const watcher = (app, eventHandler) => {
     }
   }
 
+  let lock = false;
   /**
    * Retrieve and process a single event from the database that has not yet been processed and is next in line
    *
@@ -168,10 +169,15 @@ const watcher = (app, eventHandler) => {
     return new Promise(async (resolve, reject) => {
       let event;
       try {
+        if (lock) return;
+        lock = true;
         [event] = await getUnProcessedEvent(eventService);
 
         // There is no event to be processed, return false
-        if (!event || !event._id) resolve(false);
+        if (!event || !event._id) {
+          lock = false;
+          resolve(false);
+        }
 
         // Process the event
         await eventService.patch(event._id, { status: EventStatus.PROCESSING });
@@ -179,6 +185,7 @@ const watcher = (app, eventHandler) => {
         await eventService.patch(event._id, { status: EventStatus.PROCESSED });
 
         event.status = EventStatus.PROCESSED;
+        lock = false;
         resolve(event);
       } catch (error) {
         if (event)
@@ -186,6 +193,7 @@ const watcher = (app, eventHandler) => {
             status: EventStatus.FAILED,
             processingError: error.toString(),
           });
+        lock = false;
         reject(error);
       }
     });
