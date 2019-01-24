@@ -126,6 +126,12 @@ const watcher = (app, eventHandler) => {
       return;
     }
 
+    logger.info(
+      `Adding new event. Block: ${event.blockNumber} log: ${event.logIndex} transactionHash: ${
+        event.transactionHash
+      }`,
+    );
+
     try {
       // Check for existing event
       const query = {
