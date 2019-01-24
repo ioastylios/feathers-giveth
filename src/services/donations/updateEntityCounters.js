@@ -19,7 +19,7 @@ const updateEntity = async (app, id, type) => {
     parentDonations: { $exists: true, $not: { $size: 0 } }, // We don't care about initial donations, they always have to go from pledge 0 to some other pledge
     isReturn: false,
     mined: true,
-    status: { $nin: [DonationStatus.FAILED] },
+    status: { $nin: [DonationStatus.FAILED, DonationStatus.TO_APPROVE] },
   };
 
   if (type === AdminTypes.DAC) {
@@ -27,13 +27,12 @@ const updateEntity = async (app, id, type) => {
     Object.assign(donationQuery, {
       delegateTypeId: id,
       delegateType: AdminTypes.DAC,
-      isReturn: false,
+      intendedProject: { $exists: false }, // This is delegation out
     });
   } else if (type === AdminTypes.CAMPAIGN) {
     Object.assign(donationQuery, {
       ownerTypeId: id,
       ownerType: AdminTypes.CAMPAIGN,
-      isReturn: false,
     });
   } else if (type === AdminTypes.MILESTONE) {
     Object.assign(donationQuery, {
