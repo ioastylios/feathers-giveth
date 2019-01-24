@@ -1,5 +1,6 @@
 const logger = require('winston');
 const { MilestoneStatus } = require('../models/milestones.model');
+const { DonationStatus } = require('../models/donations.model');
 
 /**
  * object factory to keep feathers cache in sync with lpp-capped-milestone contracts
@@ -128,11 +129,32 @@ const cappedMilestones = app => {
         throw new Error('paymentCollected only handles PaymentCollected events');
       }
 
-      await updateMilestoneStatus(
-        event.returnValues.idProject,
-        MilestoneStatus.PAID,
-        event.transactionHash,
-      );
+      const { idProject: projectId } = event.returnValues;
+
+      const matchingMilestones = await milestones.find({ paginate: false, query: { projectId } });
+
+      if (matchingMilestones.length !== 1) {
+        logger.info(
+          `Could not find a single milestone with projectId: ${projectId}, found: ${matchingMilestones.map(
+            m => m._id,
+          )}`,
+        );
+        return;
+      }
+
+      const donations = await app.service('donations').find({
+        paginate: false,
+        query: {
+          status: { $in: [DonationStatus.COMMITTED, DonationStatus.PAYING] },
+          amountRemaining: { $ne: '0' },
+          ownerTypeId: matchingMilestones[0]._id,
+        },
+      });
+
+      // if there are still committed donations, don't mark the as paid or paying
+      if (donations.length > 0) return;
+
+      await updateMilestoneStatus(projectId, MilestoneStatus.PAID, event.transactionHash);
     },
   };
 };
