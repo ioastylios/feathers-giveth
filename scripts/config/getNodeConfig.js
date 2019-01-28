@@ -50,8 +50,8 @@ module.exports = (NODE_ENV = process.env.NODE_ENV) => {
         blockchainDatabase: './data/rsk',
         requiredConfirmations: 0,
         nodeDownloadURL:
-          'https://github.com/rsksmart/rskj/releases/download/ORCHID-0.5.3/rskj-core-0.5.3-ORCHID-all.jar',
-        binPath: './scripts/bin/rskj-core-0.5.3-ORCHID-all.jar',
+          'https://github.com/rsksmart/rskj/releases/download/ORCHID-0.6.0/rskj-core-0.6.0-ORCHID-all.jar',
+        binPath: './scripts/bin/rskj-core-0.6.0-ORCHID-all.jar',
         config: './scripts/config/rsk_node.conf',
         symbol: 'BTC',
         configFilename: './config/rsk.json',
