@@ -1,7 +1,15 @@
 // eslint
-const { Kernel, ACL, LPVault, LiquidPledging, LPFactory, test } = require('giveth-liquidpledging');
+const {
+  DAOFactory,
+  Kernel,
+  ACL,
+  LPVault,
+  LiquidPledging,
+  LPFactory,
+  test,
+} = require('giveth-liquidpledging');
 const { LPPCampaign, LPPCampaignFactory } = require('lpp-campaign');
-const { LPPCappedMilestone, LPPCappedMilestoneFactory } = require('lpp-capped-milestone');
+const { LPPCappedMilestone, LPPCappedMilestoneFactory } = require('lpp-capped-native-milestone');
 
 const { RecoveryVault } = test;
 
@@ -13,10 +21,25 @@ module.exports = (web3, from) =>
       console.log(` - BaseVault deployed`);
       const baseLP = await LiquidPledging.new(web3, { from });
       console.log(` - Base Liquid Pledging deployed`);
-      const lpFactory = await LPFactory.new(web3, baseVault.$address, baseLP.$address, {
-        gas: 6700000,
-        from,
-      });
+      const baseACL = await ACL.new(web3, { from });
+      const baseKernel = await Kernel.new(web3, false, { from });
+      const daoFactory = await DAOFactory.new(
+        web3,
+        baseKernel.$address,
+        baseACL.$address,
+        '0x0000000000000000000000000000000000000000',
+        { from },
+      );
+      const lpFactory = await LPFactory.new(
+        web3,
+        daoFactory.$address,
+        baseVault.$address,
+        baseLP.$address,
+        {
+          gas: 6700000,
+          from,
+        },
+      );
       const recoveryVault = (await RecoveryVault.new(web3, { from })).$address;
       const r = await lpFactory.newLP(from, recoveryVault, { $extraGas: 100000, from });
       console.log(` - Recovery Vault deployed`);
@@ -66,6 +89,12 @@ module.exports = (web3, from) =>
       );
       await acl.grantPermission(
         lppCampaignFactory.$address,
+        kernel.$address,
+        await kernel.APP_MANAGER_ROLE(),
+        { $extraGas: 100000, from },
+      );
+      await acl.grantPermission(
+        lppCampaignFactory.$address,
         liquidPledging.$address,
         await liquidPledging.PLUGIN_MANAGER_ROLE(),
         { $extraGas: 100000, from },
@@ -101,6 +130,12 @@ module.exports = (web3, from) =>
         lppCappedMilestoneFactory.$address,
         liquidPledging.$address,
         await liquidPledging.PLUGIN_MANAGER_ROLE(),
+        { $extraGas: 100000, from },
+      );
+      await acl.grantPermission(
+        lppCappedMilestoneFactory.$address,
+        kernel.$address,
+        await kernel.APP_MANAGER_ROLE(),
         { $extraGas: 100000, from },
       );
       console.log(` - Permissions set`);

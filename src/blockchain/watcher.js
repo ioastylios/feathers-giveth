@@ -1,5 +1,5 @@
 const { LiquidPledging, LPVault, Kernel } = require('giveth-liquidpledging');
-const { LPPCappedMilestone } = require('lpp-capped-milestone');
+const { LPPCappedMilestone } = require('lpp-capped-native-milestone');
 const { keccak256, padLeft, toHex } = require('web3-utils');
 const semaphore = require('semaphore');
 const logger = require('winston');

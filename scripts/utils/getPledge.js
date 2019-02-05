@@ -1,6 +1,6 @@
 const Web3 = require('web3');
 const { LiquidPledging, LPVault } = require('giveth-liquidpledging');
-const { LPPCappedMilestone } = require('lpp-capped-milestone');
+const { LPPCappedMilestone } = require('lpp-capped-native-milestone');
 
 const web3 = new Web3('http://localhost:8548');
 const { MiniMeToken } = require('minimetoken');

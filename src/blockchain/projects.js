@@ -1,8 +1,8 @@
 /* eslint-disable consistent-return */
 
-const { Kernel, AppProxyUpgradeable } = require('giveth-liquidpledging/build/contracts');
+const { Kernel, AppProxyUpgradeable } = require('giveth-liquidpledging');
 const isIPFS = require('is-ipfs');
-const { LPPCappedMilestone } = require('lpp-capped-milestone');
+const { LPPCappedMilestone } = require('lpp-capped-native-milestone');
 const { LPPCampaign } = require('lpp-campaign');
 const { keccak256 } = require('web3-utils');
 const logger = require('winston');

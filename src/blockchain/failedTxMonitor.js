@@ -1,8 +1,8 @@
-const LiquidPledgingArtifact = require('giveth-liquidpledging/build/LiquidPledging.json');
+const LiquidPledgingArtifact = require('giveth-liquidpledging/dist/contracts/LiquidPledging.json');
 const { toBN } = require('web3-utils');
 const logger = require('winston');
-const LPVaultArtifact = require('giveth-liquidpledging/build/LPVault.json');
-const LPPCappedMilestoneArtifact = require('lpp-capped-milestone/build/LPPCappedMilestone.json');
+const LPVaultArtifact = require('giveth-liquidpledging/dist/contracts/LPVault.json');
+const LPPCappedMilestoneArtifact = require('lpp-capped-native-milestone/dist/contracts/LPPCappedMilestone.json');
 
 const eventDecodersFromArtifact = require('./lib/eventDecodersFromArtifact');
 const topicsFromArtifacts = require('./lib/topicsFromArtifacts');

@@ -1,4 +1,4 @@
-const LiquidPledgingArtifact = require('giveth-liquidpledging/build/LiquidPledging.json');
+const LiquidPledgingArtifact = require('giveth-liquidpledging/dist/contracts/LiquidPledging.json');
 const logger = require('winston');
 const { toBN } = require('web3-utils');
 const eventDecodersFromArtifact = require('./lib/eventDecodersFromArtifact');
