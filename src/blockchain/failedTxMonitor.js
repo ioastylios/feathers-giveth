@@ -244,7 +244,7 @@ const failedTxMonitor = (app, eventWatcher) => {
     if (!receipt || !receipt.status) {
       handlePendingDonation(currentBlock, donation, receipt, topics);
     } else {
-      console.log("\x1b[44m%s\x1b[0m", "wrong receipt!" + receipt.status);
+      console.log("\x1b[44m%s\x1b[0m", "wrong receipt!" + donation._id + " \n\n"); console.log("\x1b[44m%s\x1b[0m", receipt)
       logger.error(
         'donation has status === `Pending` but home transaction was successful. Was the donation correctly bridged?',
       );
