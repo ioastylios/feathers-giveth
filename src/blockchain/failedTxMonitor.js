@@ -172,9 +172,20 @@ const failedTxMonitor = (app, eventWatcher) => {
   async function handlePendingDonation(currentBlock, donation, receipt, topics) {
     console.log("\x1b[44m%s\x1b[0m", "handling pending!");
     // reset the donation status if the tx has been pending for more then 2 hrs, otherwise ignore
-    //if (!receipt && donation.updatedAt.getTime() >= Date.now() - TWO_HOURS) return;
+
+    const pendingForTwoHours = !receipt && donation.updatedAt.getTime() >= Date.now() - TWO_HOURS
+    const notRequiredConfimations = receipt && currentBlock - receipt.blockNumber < requiredConfirmations
+    console.log("\x1b[44m%s\x1b[0m", "handling pending!");
+
+    if (pendingForTwoHours) {
+      console.log("\x1b[44m%s\x1b[0m", "wrong timing: " + !receipt + donation.updatedAt.getTime());
+      return;
+    }
     // ignore if there isn't enough confirmations
-    if (receipt && currentBlock - receipt.blockNumber < requiredConfirmations) return;
+    if (notRequiredConfimations) {
+      console.log("\x1b[44m%s\x1b[0m", "wrong confirmations: " + receipt + currentBlock + receipt.blockNumber);
+      return;
+    } 
     console.log("\x1b[44m%s\x1b[0m", "good conditions");
 
     if (!receipt || !receipt.status) {
