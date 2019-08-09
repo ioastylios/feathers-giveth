@@ -184,7 +184,7 @@ const failedTxMonitor = (app, eventWatcher) => {
     // ignore if there isn't enough confirmations
     if (notRequiredConfimations) {
       console.log("\x1b[44m%s\x1b[0m", "wrong confirmations: " + currentBlock + " / " + receipt.blockNumber);
-      return;
+      //return;
     } 
     console.log("\x1b[44m%s\x1b[0m", "good conditions");
 
@@ -248,6 +248,7 @@ const failedTxMonitor = (app, eventWatcher) => {
       logger.error(
         'donation has status === `Pending` but home transaction was successful. Was the donation correctly bridged?',
       );
+      handlePendingDonation(currentBlock, donation, receipt, topics);
     }
   }
 
