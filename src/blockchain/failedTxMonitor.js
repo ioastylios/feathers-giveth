@@ -175,6 +175,7 @@ const failedTxMonitor = (app, eventWatcher) => {
     if (!receipt && donation.updatedAt.getTime() >= Date.now() - TWO_HOURS) return;
     // ignore if there isn't enough confirmations
     if (receipt && currentBlock - receipt.blockNumber < requiredConfirmations) return;
+    console.log("\x1b[44m%s\x1b[0m", "good conditions");
 
     if (!receipt || !receipt.status) {
       console.log("\x1b[44m%s\x1b[0m", "marking as failed!");
@@ -232,6 +233,7 @@ const failedTxMonitor = (app, eventWatcher) => {
     if (!receipt || !receipt.status) {
       handlePendingDonation(currentBlock, donation, receipt, topics);
     } else {
+      console.log("\x1b[44m%s\x1b[0m", "wrong receipt!" + receipt.status);
       logger.error(
         'donation has status === `Pending` but home transaction was successful. Was the donation correctly bridged?',
       );
