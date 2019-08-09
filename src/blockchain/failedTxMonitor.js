@@ -176,6 +176,7 @@ const failedTxMonitor = (app, eventWatcher) => {
     if (receipt && currentBlock - receipt.blockNumber < requiredConfirmations) return;
 
     if (!receipt || !receipt.status) {
+      console.log("\x1b[44m%s\x1b[0m", "marking as failed!");
       if (donation.parentDonations.length > 0) {
         updateFailedDonationParents(donation);
       }
@@ -185,7 +186,10 @@ const failedTxMonitor = (app, eventWatcher) => {
           status: DonationStatus.FAILED,
           mined: true,
         })
-        .catch(logger.error);
+        .catch(e => {
+          logger.error;
+          console.log("\x1b[44m%s\x1b[0m", e);
+        });
       return;
     }
 
@@ -260,7 +264,6 @@ const failedTxMonitor = (app, eventWatcher) => {
           status: DacStatus.FAILED,
         })
         .catch(logger.error);
-
       return;
     }
 
