@@ -82,10 +82,85 @@ async function asyncForEach(array, callback) {
   }
 }
 
-async function itemsFromDonations(donations, dappUrl, usersService, campaignService) {
+async function itemsFromCampaign(donations, dappUrl, usersService, campaignService) {
   const csvItems = [];
   let totalEthDonated = 0;
   let totalDaiDonated = 0;
+  await asyncForEach(donations, async donation => {
+    const donationData = await usersService.find({
+      query: {
+        address: donation.giverAddress,
+      },
+    });
+    const oId = new ObjectID(donation.ownerTypeId);
+    const campaignData = await campaignService.find({
+      query: {
+        _id: oId,
+      },
+    });
+    const campaignName = campaignData.data[0].title;
+    // console.log(campaignName)
+    const { symbol } = donation.token;
+    const donationUser = donationData.data[0];
+    let donatorName = '';
+    if (donationUser.name === '' || !donationUser.name) {
+      donatorName = 'Anonymous';
+    } else {
+      donatorName = donationUser.name;
+    }
+    // let action = '';
+    // const linkMilestone = `${dappUrl}/campaigns/${donation.ownerTypeId}`;
+    const donorProfile = `https://${dappUrl}/profile/${donation.giverAddress}`;
+    const tokenAmount = donation.amount / 10 ** donation.token.decimals;
+    const mainLink = `https://etherscan.io/tx/${donation.homeTxHash}`;
+    const rinkLink = `https://rinkeby.etherscan.io/tx/${donation.txHash}`;
+    if (symbol === 'ETH') {
+      totalEthDonated += tokenAmount;
+    } else {
+      totalDaiDonated += tokenAmount;
+    }
+    const csvItem = new CsvItem(
+      donation.commitTime,
+      donatorName,
+      donation.giverAddress,
+      campaignName,
+      donation.ownerTypeId,
+      symbol,
+      donation.usdValue,
+      'Donated',
+      '-',
+      '-',
+      donorProfile,
+      totalEthDonated,
+      totalDaiDonated,
+      rinkLink,
+      mainLink,
+    );
+    // console.log(csvItem)
+    csvItems.push(csvItem.returnJSON());
+  });
+  return csvItems;
+}
+
+async function itemsFromMilestones(
+  milestones,
+  dappUrl,
+  usersService,
+  campaignService,
+  donationService,
+) {
+  const csvItems = [];
+  let totalEthDonated = 0;
+  let totalDaiDonated = 0;
+  await asyncForEach(milestones, async milestone => {
+    const milestonePaidDonations = await donationService.find({
+      query: {
+        status: 'Committed',
+        ownerTypeId: milestone.id,
+      },
+    });
+  });
+
   await asyncForEach(donations, async donation => {
     const donationData = await usersService.find({
       query: {
@@ -173,6 +248,7 @@ module.exports = function registerService() {
   const donationService = app.service('donations');
   const campaignService = app.service('campaigns');
   const usersService = app.service('users');
+  const milestoneService = app.service('milestones');
   const dappUrl = app.get('dappUrl');
 
   const csvService = {
@@ -183,9 +259,28 @@ module.exports = function registerService() {
           ownerTypeId: id,
         },
       });
+      const milestones = await milestoneService.find({
+        query: {
+          campaignId: id,
+        },
+      });
+      const milestoneItems = await itemsFromMilestones(
+        milestones,
+        dappUrl,
+        usersService,
+        campaignService,
+        donationService,
+      );
+      const donationItems = await itemsFromCampaign(
+        result.data,
+        dappUrl,
+        usersService,
+        campaignService,
+      );
+
       let csvItems = [];
       csvItems = await toCSV(
-        await itemsFromDonations(result.data, dappUrl, usersService, campaignService),
+        await itemsFromCampaign(result.data, dappUrl, usersService, campaignService),
       );
       // console.log(csvItems)
       return csvItems;
