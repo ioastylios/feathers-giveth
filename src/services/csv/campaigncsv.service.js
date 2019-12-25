@@ -126,7 +126,7 @@ async function itemsFromCampaign(donations, dappUrl, usersService, campaignServi
       campaignName,
       donation.ownerTypeId,
       symbol,
-      donation.usdValue,
+      tokenAmount,
       'Donated',
       '-',
       '-',
@@ -150,70 +150,58 @@ async function itemsFromMilestones(
   donationService,
 ) {
   const csvItems = [];
-  let totalEthDonated = 0;
-  let totalDaiDonated = 0;
-  await asyncForEach(milestones, async milestone => {
-    const milestonePaidDonations = await donationService.find({
+  console.log('ON MILESTONES');
+  console.log(milestones)
+
+  await asyncForEach(milestones, milestone => {
+    const milestonePaidDonations = donationService.find({
       query: {
-        status: 'Committed',
+        status: 'Paid',
         ownerTypeId: milestone.id,
       },
     });
+    console.log(milestonePaidDonations);
   });
 
-  await asyncForEach(donations, async donation => {
-    const donationData = await usersService.find({
-      query: {
-        address: donation.giverAddress,
-      },
-    });
-    const oId = new ObjectID(donation.ownerTypeId);
-    const campaignData = await campaignService.find({
-      query: {
-        _id: oId,
-      },
-    });
-    const campaignName = campaignData.data[0].title;
-    // console.log(campaignName)
-    const { symbol } = donation.token;
-    const donationUser = donationData.data[0];
-    let donatorName = '';
-    if (donationUser.name === '' || !donationUser.name) {
-      donatorName = 'Anonymous';
-    } else {
-      donatorName = donationUser.name;
-    }
-    // let action = '';
-    // const linkMilestone = `${dappUrl}/campaigns/${donation.ownerTypeId}`;
-    const donorProfile = `https://${dappUrl}/profile/${donation.giverAddress}`;
-    const tokenAmount = donation.amount / 10 ** donation.token.decimals;
-    const mainLink = `https://etherscan.io/tx/${donation.homeTxHash}`;
-    const rinkLink = `https://rinkeby.etherscan.io/tx/${donation.txHash}`;
-    if (symbol === 'ETH') {
-      totalEthDonated += tokenAmount;
-    } else {
-      totalDaiDonated += tokenAmount;
-    }
-    const csvItem = new CsvItem(
-      donation.commitTime,
-      donatorName,
-      donation.giverAddress,
-      campaignName,
-      donation.ownerTypeId,
-      symbol,
-      donation.usdValue,
-      'Donated',
-      '-',
-      '-',
-      donorProfile,
-      totalEthDonated,
-      totalDaiDonated,
-      rinkLink,
-      mainLink,
-    );
-    // console.log(csvItem)
-    csvItems.push(csvItem.returnJSON());
-  });
+  // const donationData = await usersService.find({
+  //   query: {
+  //     address: milestone.ownerAddress,
+  //   },
+  // });
+  // const { symbol } = paidDonation.token;
+  // const donationUser = donationData.data[0];
+  // let donatorName = '';
+  // if (donationUser.name === '' || !donationUser.name) {
+  //   donatorName = 'Anonymous';
+  // } else {
+  //   donatorName = donationUser.name;
+  // }
+
+  // const donorProfile = `https://${dappUrl}/profile/${paidDonation.giverAddress}`;
+  // const tokenAmount = paidDonation.amount / 10 ** paidDonation.token.decimals;
+  // const mainLink = `https://etherscan.io/tx/${paidDonation.homeTxHash}`;
+  // const rinkLink = `https://rinkeby.etherscan.io/tx/${paidDonation.txHash}`;
+
+  // const csvItem = new CsvItem(
+  //   paidDonation.commitTime,
+  //   donatorName,
+  //   milestone.ownerAddress,
+  //   milestone.title,
+  //   paidDonation.ownerTypeId,
+  //   symbol,
+  //   tokenAmount,
+  //   'Collected',
+  //   '-',
+  //   '-',
+  //   donorProfile,
+  //   '',
+  //   '',
+  //   rinkLink,
+  //   mainLink,
+  // );
+  // console.log(csvItem);
+  // csvItems.push(csvItem);
+
   return csvItems;
 }
 
@@ -259,6 +247,8 @@ module.exports = function registerService() {
           ownerTypeId: id,
         },
       });
+      let totalEthDonated = 0;
+      let totalDaiDonated = 0;
       const milestones = await milestoneService.find({
         query: {
           campaignId: id,
@@ -271,6 +261,7 @@ module.exports = function registerService() {
         campaignService,
         donationService,
       );
+      console.log(milestoneItems);
       const donationItems = await itemsFromCampaign(
         result.data,
         dappUrl,
@@ -278,12 +269,33 @@ module.exports = function registerService() {
         campaignService,
       );
 
+      const allItems = [];
+
+      await asyncForEach(milestoneItems, item => {
+        allItems.push(item);
+      });
+      await asyncForEach(donationItems, item => {
+        allItems.push(item);
+      });
+      allItems.sort((a, b) => new Date(b.actionDate) - new Date(a.actionDate));
+      let index = 0;
+      await asyncForEach(allItems, item => {
+        const tempItem = item;
+        if (tempItem.action === 'Donated') {
+          if (tempItem.symbol === 'ETH') {
+            totalEthDonated += tempItem.tokenAmount;
+          } else {
+            totalDaiDonated += tempItem.tokenAmount;
+          }
+        }
+        allItems[index].ethCampBalance = totalEthDonated;
+        allItems[index].daiCampBalance = totalDaiDonated;
+        index += 1;
+      });
       let csvItems = [];
-      csvItems = await toCSV(
-        await itemsFromCampaign(result.data, dappUrl, usersService, campaignService),
-      );
+      csvItems = toCSV(allItems);
       // console.log(csvItems)
-      return csvItems;
+      //return csvItems;
     },
   };
 
